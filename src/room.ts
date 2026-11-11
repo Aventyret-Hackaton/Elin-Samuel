@@ -42,17 +42,17 @@ export class Room {
   power = 0; // skärmen
   lit = 0; // rummet
   zoom = 0; // 0 = rumsvy, 1 = skärmen fyller fönstret
-  winner = 0; // 0 = idle, 1 = vinnartillstånd
+  winner = 0; // 0 = scen 1, 1 = scen 3 (kameran mot fönstret)
   mouseGain = 1;
   paused = false;
 
   private mouse = new THREE.Vector2();
   private mouseS = new THREE.Vector2();
-  // Scen 1: datorn centrerad (ingen text i bild). Scen 3: förskjuten åt höger så vinnarpanelen får plats till vänster.
+  // Scen 1: datorn centrerad. Scen 3: kameran riktad mot fönstret med persienn och neonskylt.
   private restPosIdle = new THREE.Vector3(0.3, 1.25, 0.9);
   private restTargetIdle = new THREE.Vector3(0.75, 1.15, -1.65);
-  private restPosWin = new THREE.Vector3(0, 1.25, 0.9);
-  private restTargetWin = new THREE.Vector3(0.05, 1.12, -1.65);
+  private restPosWin = new THREE.Vector3(-0.75, 1.5, 0.25);
+  private restTargetWin = new THREE.Vector3(-1.0, 1.68, -2.27);
   /** Text som användaren skriver i prompten på skärmen. */
   promptText = '';
   promptSubmitted = false;
@@ -76,6 +76,13 @@ export class Room {
   private fillTeal = new THREE.PointLight(0x2fd4e0, 0, 8, 2);
   private carLight = new THREE.SpotLight(0xd6ecff, 0, 14, 0.5, 0.8, 1.2);
   private windowMat: THREE.MeshBasicMaterial;
+  private windowTex!: THREE.CanvasTexture;
+  private signCanvas = document.createElement('canvas');
+  private blindsMesh!: THREE.Mesh;
+  /** 0 = persiennen nere, 1 = uppdragen. */
+  blinds = 0;
+  /** Neonskyltens ljusstyrka (0-1). */
+  signPower = 0;
   private dust: THREE.Points;
   private ledGreen: THREE.Mesh;
   private ledPink: THREE.Mesh;
@@ -248,25 +255,86 @@ export class Room {
     add(new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.2, 0.25), dark), -1.9, 1.08, -2.1);
     add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.9, 0.5), dark), -2.3, 0.45, -1.9);
 
-    // Fönster med persienner (neon bakom), på bakväggen
-    const win = canvasTexture(256, 256, (g, w, h) => {
+    // Fönster: neonglöd bakom, persienn (slats) framför. Persiennen kan dras upp, skylten visar repots namn.
+    const WW = 1.6;
+    const WH = 1.1;
+    this.signCanvas.width = 1024;
+    this.signCanvas.height = 704;
+    this.windowTex = new THREE.CanvasTexture(this.signCanvas);
+    this.windowTex.colorSpace = THREE.SRGBColorSpace;
+    this.windowMat.map = this.windowTex;
+    this.windowMat.needsUpdate = true;
+    this.drawSign(null);
+    const windowMesh = new THREE.Mesh(new THREE.PlaneGeometry(WW, WH), this.windowMat);
+    windowMesh.position.set(-1.0, 1.65, -2.27);
+    this.scene.add(windowMesh);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(WW + 0.1, WH + 0.1, 0.04), dark);
+    frame.position.set(-1.0, 1.65, -2.3);
+    this.scene.add(frame);
+    const slats = canvasTexture(256, 512, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      g.fillStyle = 'rgba(8,6,6,0.92)';
+      for (let y = 2; y < h - 26; y += 20) g.fillRect(0, y, w, 12);
+      g.fillStyle = '#100d0b';
+      g.fillRect(0, h - 24, w, 24); // nedre list
+    });
+    this.blindsMesh = new THREE.Mesh(new THREE.PlaneGeometry(WW, WH), new THREE.MeshBasicMaterial({ map: slats, transparent: true, toneMapped: false }));
+    this.blindsMesh.position.set(-1.0, 1.65, -2.262);
+    this.scene.add(this.blindsMesh);
+  }
+
+  /** Ritar fönstrets glöd. Utan namn: neonglöd. Med namn: mörk natt med en neonskylt. */
+  private drawSign(name: string | null) {
+    const g = this.signCanvas.getContext('2d')!;
+    const w = 1024;
+    const h = 704;
+    if (!name) {
       const gr = g.createLinearGradient(0, 0, 0, h);
       gr.addColorStop(0, '#3d7bff');
       gr.addColorStop(0.5, '#ff3d7f');
       gr.addColorStop(1, '#2fd4e0');
       g.fillStyle = gr;
       g.fillRect(0, 0, w, h);
-      g.fillStyle = 'rgba(8,6,6,0.88)';
-      for (let y = 4; y < h; y += 20) g.fillRect(0, y, w, 12);
-    });
-    this.windowMat.map = win;
-    this.windowMat.needsUpdate = true;
-    const windowMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.0), this.windowMat);
-    windowMesh.position.set(-1.0, 1.65, -2.27);
-    this.scene.add(windowMesh);
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 0.04), dark);
-    frame.position.set(-1.0, 1.65, -2.3);
-    this.scene.add(frame);
+    } else {
+      g.fillStyle = '#080510';
+      g.fillRect(0, 0, w, h);
+      const hz = g.createRadialGradient(w / 2, h / 2, 30, w / 2, h / 2, w * 0.62);
+      hz.addColorStop(0, 'rgba(255,61,127,0.22)');
+      hz.addColorStop(1, 'rgba(8,5,16,0)');
+      g.fillStyle = hz;
+      g.fillRect(0, 0, w, h);
+      let size = 300;
+      const font = (px: number) => `${px}px "Replica LL", "Helvetica Neue", Arial, sans-serif`;
+      g.font = font(size);
+      while (g.measureText(name).width > w * 0.84 && size > 60) {
+        size -= 8;
+        g.font = font(size);
+      }
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.lineJoin = 'round';
+      const y = h / 2 + size * 0.04;
+      // neonrör: brett sken, rosa rör, vit het kärna
+      g.shadowColor = '#ff3d7f';
+      g.shadowBlur = 70;
+      g.lineWidth = 16;
+      g.strokeStyle = '#ff3d7f';
+      g.strokeText(name, w / 2, y);
+      g.shadowBlur = 26;
+      g.lineWidth = 9;
+      g.strokeStyle = '#ff7aa8';
+      g.strokeText(name, w / 2, y);
+      g.shadowBlur = 0;
+      g.lineWidth = 3.5;
+      g.strokeStyle = '#fff1f6';
+      g.strokeText(name, w / 2, y);
+    }
+    this.windowTex.needsUpdate = true;
+  }
+
+  /** Sätt (eller ta bort) neonskylten bakom persiennen. */
+  setSign(name: string | null) {
+    this.drawSign(name);
   }
 
   private buildDust() {
@@ -375,6 +443,12 @@ export class Room {
     this.drawScreen(t);
   }
 
+  /** Starta om skärmens inskrivna rader (när man kommer tillbaka till rummet). */
+  restartScreen(now: number) {
+    this.screenStart = now;
+    this.drawScreen(now);
+  }
+
   setScreenState(s: ScreenState, now: number) {
     if (s === this.screenState) return;
     this.screenState = s;
@@ -464,7 +538,10 @@ export class Room {
     this.blindsSpot.color.set(0xff3d7f).lerp(new THREE.Color(0xffb15c), w * 0.6);
     this.blindsSpot.intensity = 10 * lit * (1 + Math.sin(t * 0.6) * 0.08);
     this.fillTeal.intensity = 0.7 * lit;
-    this.windowMat.color.setScalar(0.15 + 0.85 * lit);
+    this.windowMat.color.setScalar((0.15 + 0.85 * lit) * (1 + this.signPower * 1.2));
+    const bs = Math.max(1 - 0.94 * this.blinds, 0.02);
+    this.blindsMesh.scale.y = bs;
+    this.blindsMesh.position.y = 2.2 - (1.1 * bs) / 2; // förankrad i överkanten, slatsen packas ihop uppåt
     (this.dust.material as THREE.PointsMaterial).opacity = 0.55 * lit;
 
     // LED-blink

@@ -1,8 +1,6 @@
 // Alla kampanjtexter på ett ställe. Inga versaler: allt skrivs och visas i gemener.
 export const CONFIG = {
   bootName: 'hackathon.exe',
-  continueLabel: 'visa vinnarprojektet',
-  winnerLabel: 'vinnande projekt',
   // Medier och data. Byt filerna i /public, ingen kodändring.
   media: {
     video: 'media/video.mp4',

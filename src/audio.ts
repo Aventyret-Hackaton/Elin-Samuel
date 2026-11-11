@@ -198,3 +198,27 @@ export function keyClick() {
   n.start();
   n.stop(c.currentTime + 0.06);
 }
+
+/** Persienn som dras upp: skramlande knäppar som blir tätare. */
+export function rattle(dur = 2.6) {
+  const c = ensureAudio();
+  const t0 = c.currentTime + 0.02;
+  let t = 0;
+  let gap = 0.12;
+  while (t < dur) {
+    const n = c.createBufferSource();
+    n.buffer = noiseBuffer(c, 0.04);
+    const bp = c.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 1400 + Math.random() * 1400;
+    bp.Q.value = 2;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.13, t0 + t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + t + 0.035);
+    n.connect(bp).connect(g).connect(c.destination);
+    n.start(t0 + t);
+    n.stop(t0 + t + 0.05);
+    t += gap;
+    gap = Math.max(0.028, gap * 0.94);
+  }
+}

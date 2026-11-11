@@ -1,11 +1,4 @@
 {
-  "_note": "PLATSHÅLLARE. Byt mot det vinnande projektet (repot) och teamet bakom det.",
-  "name": "[vinnande projekt]",
-  "tagline": "> github.com/Aventyret-Hackaton/[repo]",
-  "motivation": "[Kort motivering från juryn. Två till tre meningar om varför just det här projektet vann.]",
-  "members": [
-    "[namn 1]",
-    "[namn 2]",
-    "[namn 3]"
-  ]
+  "_note": "PLATSHÅLLARE. Byt name mot det vinnande repots namn. Det visas på neonskylten i scen 3, inget mer.",
+  "name": "[repo-namn]"
 }

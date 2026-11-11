@@ -10,9 +10,10 @@ npm run dev      # http://localhost:5173
 npm run build    # typecheck + produktionsbygge i dist/
 ```
 Flöde: klick/ENTER på boot-skärmen (modemljud, klicka igen för att hoppa över) → rummet, ingen text i bild →
-klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen → statistik och personer → vinnande projekt.
+klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen → statistik och personer →
+`continue? [y] [n]` (pilar/y/n väljer, ENTER bekräftar): y → persiennen dras upp och en neonskylt med repots namn syns (inget mer), n → tillbaka till rummet.
 
-Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=winner`.
+Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=blinds`, `?skip=winner`.
 Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i scen 1.
 
 ## Byt platshållare mot riktiga assets (ingen kodändring)
@@ -22,7 +23,7 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 | Loopklippet (video-slutet, 5–10 s) | `public/media/loop.mp4` |
 | Teamfoton | `public/team/*`, lista byggs av `npm run team` till `public/data/team.json` |
 | GitHub-statistik (alla repon i orgen) | `public/data/github.json`, hämtas med `npm run github` |
-| Vinnare, motivering | `public/data/winner.json` |
+| Vinnande repo (namnet på neonskylten) | `public/data/winner.json` (`name`) |
 | Etiketter och sökvägar | `src/config.ts` |
 
 ## Data och diagram

@@ -16,11 +16,11 @@ import {
 } from 'chart.js';
 import { Room } from './room';
 import { CONFIG, BASE } from './config';
-import { ensureAudio, playModem, playHum, blip, whoosh, keyClick } from './audio';
+import { ensureAudio, playModem, playHum, blip, whoosh, keyClick, rattle } from './audio';
 
 Chart.register(BarController, BarElement, LineController, LineElement, PointElement, DoughnutController, ArcElement, CategoryScale, LinearScale, Filler, Legend);
 
-type State = 'gate' | 'boot' | 'idle' | 'zoom' | 'prompt' | 'submit' | 'video' | 'loop' | 'reveal' | 'winner';
+type State = 'gate' | 'boot' | 'idle' | 'zoom' | 'prompt' | 'submit' | 'video' | 'loop' | 'choose' | 'reveal' | 'winner';
 
 interface Team {
   team: { name: string; photo: string | null }[];
@@ -33,10 +33,7 @@ interface GitHubData {
   languages: { name: string; share: number }[];
 }
 interface Winner {
-  name: string;
-  tagline: string;
-  motivation: string;
-  members: string[];
+  name: string; // repots/projektets namn, visas på neonskylten
 }
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -231,6 +228,7 @@ function startVideo() {
   const layer = $('videoLayer');
   const v1 = $<HTMLVideoElement>('v1');
   const v2 = $<HTMLVideoElement>('v2');
+  gsap.set(v2, { opacity: 0 });
   v1.src = BASE + CONFIG.media.video;
   v2.src = BASE + CONFIG.media.loop;
   layer.classList.remove('hidden');
@@ -446,20 +444,88 @@ function buildHud() {
   tl.to(wrap, { top: '47vh', scale: 1, duration: 2.6, ease: 'power3.inOut' }, finalAt + 0.2);
   tl.to(spin, { timeScale: 0.7, duration: 2 }, finalAt + 0.2);
   tl.add(typeInto(finalTitle, `> ${team.length} personer. ett vinnande projekt.`, 28), finalAt + 1.4);
-  tl.call(showNext, [], finalAt + 3.2);
+  tl.call(showContinue, [], finalAt + 3.2);
 }
 
-function showNext() {
-  const b = $('next');
-  b.textContent = CONFIG.continueLabel + ' ▶';
-  b.classList.remove('hidden');
-  gsap.fromTo(b, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5 });
-}
-$('next').addEventListener('click', goReveal);
+// ---------- Slutet av scen 2: "continue? [y] [n]" ----------
+// Pilarna (eller y/n) väljer, enter bekräftar. y -> scen 3, n -> tillbaka till scen 1.
+let choice: 'y' | 'n' = 'n';
 
-// ---------- Scen 3: vinnare ----------
-function goReveal() {
+function renderChoice() {
+  const el = document.getElementById('choice');
+  if (!el) return;
+  el.innerHTML =
+    `<span>&gt; continue?</span>` +
+    `<span class="opt${choice === 'y' ? ' sel' : ''}" data-c="y">[ y ]</span>` +
+    `<span class="opt${choice === 'n' ? ' sel' : ''}" data-c="n">[ n ]</span><i class="cursor"></i>`;
+}
+
+function showContinue() {
   if (state !== 'loop') return;
+  state = 'choose';
+  choice = 'n';
+  const el = document.createElement('div');
+  el.id = 'choice';
+  $('hud').appendChild(el);
+  renderChoice();
+  gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 });
+  el.addEventListener('click', (e) => {
+    const c = (e.target as HTMLElement).dataset.c as 'y' | 'n' | undefined;
+    if (c) setChoice(c);
+  });
+}
+
+function setChoice(c: 'y' | 'n') {
+  if (c === choice) return;
+  choice = c;
+  blip(c === 'y' ? 760 : 520, 0.04);
+  renderChoice();
+}
+
+window.addEventListener('keydown', (e) => {
+  if (state !== 'choose') return;
+  const k = e.key;
+  if (k === 'ArrowLeft' || k === 'ArrowUp') setChoice('y');
+  else if (k === 'ArrowRight' || k === 'ArrowDown') setChoice('n');
+  else if (k.toLowerCase() === 'y') setChoice('y');
+  else if (k.toLowerCase() === 'n') setChoice('n');
+  else if (k === 'Enter') {
+    e.preventDefault();
+    if (choice === 'y') goReveal();
+    else backToRoom();
+  } else return;
+  e.preventDefault();
+});
+
+/** N: tillbaka till scen 1 (rummet), redo för ett nytt försök. */
+function backToRoom() {
+  if (state !== 'choose') return;
+  state = 'reveal'; // upptaget under övergången
+  blip(330, 0.08);
+  whoosh(1.6);
+  glitch(600);
+  gsap.delayedCall(0.3, () => {
+    hudTl?.kill();
+    gsap.killTweensOf('.ring');
+    charts.forEach((c) => c.destroy());
+    charts = [];
+    $<HTMLVideoElement>('v1').pause();
+    $<HTMLVideoElement>('v2').pause();
+    gsap.set($('v2'), { opacity: 0 });
+    $('videoLayer').classList.add('hidden');
+    $('hud').innerHTML = '';
+    room.promptText = '';
+    room.promptSubmitted = false;
+    room.restartScreen(now);
+    room.paused = false;
+    stopHum = playHum();
+    gsap.to(room, { zoom: 0, duration: 2.6, ease: 'power3.inOut', onComplete: () => { state = 'idle'; } });
+  });
+}
+
+// ---------- Scen 3: persiennen dras upp, bakom den en neonskylt med repots namn. Inget mer. ----------
+function goReveal() {
+  if (state !== 'choose') return;
   state = 'reveal';
   blip(990, 0.08);
   whoosh(1.6);
@@ -473,35 +539,35 @@ function goReveal() {
     $<HTMLVideoElement>('v2').pause();
     $('videoLayer').classList.add('hidden');
     $('hud').innerHTML = '';
-    $('next').classList.add('hidden');
     room.paused = false;
-    room.setScreenState('winner', now);
-    gsap.to(room, { winner: 1, duration: 1.4 });
-    gsap.to(room, { zoom: 0, duration: 2.6, ease: 'power3.inOut' });
+    room.setScreenState('off', now); // ingen text på skärmen heller
+    gsap.to(room, { power: 0.15, duration: 1.2 });
+    gsap.to(room, { winner: 1, duration: 2.6, ease: 'power2.inOut' });
+    gsap.to(room, { zoom: 0, duration: 2.8, ease: 'power3.inOut' });
     stopHum = playHum();
   });
-  gsap.delayedCall(1.9, showWinner);
+  gsap.delayedCall(3.4, () => void revealSign());
 }
 
-function showWinner() {
-  const w = winner ?? { name: '[vinnande projekt]', tagline: '', motivation: '', members: [] };
-  const el = $('winner');
-  $('wKicker').textContent = '';
-  $('wName').textContent = '';
-  $('wTag').textContent = '';
-  $('wText').textContent = '';
-  $('wTeam').innerHTML = '';
-  show(el, 0.6);
-  const tl = gsap.timeline();
-  tl.add(typeInto($('wKicker'), `> ${CONFIG.winnerLabel}`, 24))
-    .add(typeInto($('wName'), w.name, 20), '>0.1')
-    .add(typeInto($('wTag'), w.tagline, 40), '>0.1')
-    .add(typeInto($('wText'), w.motivation, 110), '>0.1')
-    .call(() => {
-      $('wTeam').innerHTML = w.members.map((m) => `<li>${m}</li>`).join('');
-      gsap.from('#wTeam li', { opacity: 0, y: 6, stagger: 0.12, duration: 0.4 });
-      state = 'winner';
-    });
+async function revealSign() {
+  const name = (winner?.name ?? '[repo-namn]').toLowerCase();
+  try {
+    await document.fonts.load('200px "Replica LL"', name);
+  } catch {
+    /* faller tillbaka på systemtypsnitt */
+  }
+  room.setSign(name);
+  rattle(2.6);
+  gsap.to(room, { blinds: 1, duration: 2.6, ease: 'power2.inOut' });
+  // neonskylten tänds med flimmer medan persiennen går upp
+  gsap
+    .timeline({ delay: 1.5 })
+    .to(room, { signPower: 1, duration: 0.08 })
+    .to(room, { signPower: 0.15, duration: 0.07 })
+    .to(room, { signPower: 1, duration: 0.1 })
+    .to(room, { signPower: 0.45, duration: 0.06 })
+    .to(room, { signPower: 1, duration: 0.6 });
+  gsap.delayedCall(4.2, () => { state = 'winner'; });
 }
 
 // ---------- Init + utvecklingsgenvägar ----------
@@ -538,8 +604,22 @@ void (async () => {
       buildHud();
     } else if (skip === 'winner') {
       room.winner = 1;
-      room.setScreenState('winner', 0);
-      showWinner();
+      room.power = 0.15;
+      room.setScreenState('off', 0);
+      await document.fonts.load('200px "Replica LL"', 'abc').catch(() => undefined);
+      room.setSign((winner?.name ?? '[repo-namn]').toLowerCase());
+      room.blinds = 1;
+      room.signPower = 1;
+      state = 'winner';
+    } else if (skip === 'blinds') {
+      // halvvägs: för att se persiennen i rörelse
+      room.winner = 1;
+      room.power = 0.15;
+      room.setScreenState('off', 0);
+      await document.fonts.load('200px "Replica LL"', 'abc').catch(() => undefined);
+      room.setSign((winner?.name ?? '[repo-namn]').toLowerCase());
+      room.blinds = 0.5;
+      room.signPower = 1;
     }
   }
 })();
