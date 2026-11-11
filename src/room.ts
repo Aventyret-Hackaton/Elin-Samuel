@@ -48,8 +48,14 @@ export class Room {
 
   private mouse = new THREE.Vector2();
   private mouseS = new THREE.Vector2();
-  private restPos = new THREE.Vector3(0, 1.25, 0.9);
-  private restTarget = new THREE.Vector3(0.05, 1.12, -1.65);
+  // Scen 1: datorn centrerad (ingen text i bild). Scen 3: förskjuten åt höger så vinnarpanelen får plats till vänster.
+  private restPosIdle = new THREE.Vector3(0.3, 1.25, 0.9);
+  private restTargetIdle = new THREE.Vector3(0.75, 1.15, -1.65);
+  private restPosWin = new THREE.Vector3(0, 1.25, 0.9);
+  private restTargetWin = new THREE.Vector3(0.05, 1.12, -1.65);
+  /** Text som användaren skriver i prompten på skärmen. */
+  promptText = '';
+  promptSubmitted = false;
   private fitDist = 1;
   private screenGroup = new THREE.Group();
   private screenCenter = new THREE.Vector3(0.9, 1.2, -1.646);
@@ -85,8 +91,8 @@ export class Room {
     this.scene.background = new THREE.Color(0x050403);
     this.scene.fog = new THREE.FogExp2(0x070a0c, 0.16);
 
-    this.screenCanvas.width = 1280;
-    this.screenCanvas.height = 720;
+    this.screenCanvas.width = 1920; // ritas i 1280x720-koordinater, skalas 1,5x för skärpa vid full zoom
+    this.screenCanvas.height = 1080;
     this.screenTex = new THREE.CanvasTexture(this.screenCanvas);
     this.screenTex.colorSpace = THREE.SRGBColorSpace;
     this.screenMat = new THREE.MeshBasicMaterial({ map: this.screenTex, toneMapped: false });
@@ -317,6 +323,7 @@ export class Room {
   // ---------- Skärminnehåll ----------
   private drawScreen(t: number) {
     const g = this.screenCtx;
+    g.setTransform(1.5, 0, 0, 1.5, 0, 0);
     const w = 1280;
     const h = 720;
     const winner = this.screenState === 'winner';
@@ -330,23 +337,25 @@ export class Room {
       g.textBaseline = 'top';
       if (winner) {
         g.font = '200px "DotGothic16", monospace';
-        g.fillText('勝者', 70, 80);
+        g.fillText('優勝', 70, 80);
         g.font = '64px VT323, monospace';
-        g.fillText('> winner selected_', 80, 400);
+        g.fillText('> project selected_', 80, 400);
         g.fillText('> ' + (Math.floor(t * 2) % 2 ? 'access granted' : 'access granted_'), 80, 480);
       } else {
-        g.font = '78px VT323, monospace';
-        const lines = [
-          '> hackathon os 26.11',
-          '> scanning repos ........ ok',
-          '> contributors ......... ok',
-          '> judging .............. ready',
-          '',
-        ];
+        g.font = '66px VT323, monospace';
+        const lines = ['> hackathon os 26.11', '> scanning repos ........ ok', '> contributors ......... ok', '> judging .............. ready'];
         const since = t - this.screenStart;
         const visible = Math.min(lines.length, Math.floor(since * 2.2));
-        lines.slice(0, visible).forEach((l, i) => g.fillText(l, 50, 50 + i * 100));
-        g.fillText('> awaiting input' + (Math.floor(t * 2) % 2 ? '_' : ' '), 50, 50 + 5 * 100);
+        lines.slice(0, visible).forEach((l, i) => g.fillText(l, 50, 40 + i * 76));
+        if (since > 1.9) {
+          // Prompten: användarens text syns här (max 36 tecken per rad)
+          const cursor = this.promptSubmitted ? '' : Math.floor(t * 2) % 2 ? '_' : ' ';
+          const text = '> ' + this.promptText + cursor;
+          const chunks: string[] = [];
+          for (let k = 0; k < text.length; k += 36) chunks.push(text.slice(k, k + 36));
+          chunks.forEach((c, i) => g.fillText(c, 50, 400 + i * 76));
+          if (this.promptSubmitted) g.fillText('> executing ...', 50, 400 + chunks.length * 76);
+        }
       }
       g.shadowBlur = 0;
     }
@@ -359,6 +368,11 @@ export class Room {
     g.fillStyle = vg;
     g.fillRect(0, 0, w, h);
     this.screenTex.needsUpdate = true;
+  }
+
+  /** Rita om skärmen direkt (för att tangenttryck ska synas utan fördröjning). */
+  refreshScreen(t: number) {
+    this.drawScreen(t);
   }
 
   setScreenState(s: ScreenState, now: number) {
@@ -388,6 +402,16 @@ export class Room {
     this.fitDist = Math.min(SCREEN_H / (2 * t), SCREEN_W / (2 * t * aspect)) * 0.985;
   }
 
+  /** Är musen över datorskärmen (med marginal)? Används för klick som startar zoomen. */
+  pointOnScreen(cx: number, cy: number, pad = 1.35) {
+    const b = this.screenNdcBounds();
+    const nx = (cx / window.innerWidth) * 2 - 1;
+    const ny = -((cy / window.innerHeight) * 2 - 1);
+    const mx = (b.minX + b.maxX) / 2;
+    const my = (b.minY + b.maxY) / 2;
+    return Math.abs(nx - mx) <= ((b.maxX - b.minX) / 2) * pad && Math.abs(ny - my) <= ((b.maxY - b.minY) / 2) * pad;
+  }
+
   /** Skärmens hörn i NDC (för kontroll att text aldrig hamnar över skärmen). */
   screenNdcBounds() {
     const hw = SCREEN_W / 2;
@@ -411,8 +435,10 @@ export class Room {
     this.mouseS.lerp(this.mouse, 1 - Math.exp(-dt * 3));
     const g = this.mouseGain * (1 - this.zoom);
 
-    const pos = this.restPos.clone().add(new THREE.Vector3(this.mouseS.x * 0.06 * g, this.mouseS.y * 0.03 * g + Math.sin(t * 0.5) * 0.004 * (1 - this.zoom), 0));
-    const tgt = this.restTarget.clone().add(new THREE.Vector3(this.mouseS.x * 0.25 * g, this.mouseS.y * 0.12 * g, 0));
+    const rp = this.restPosIdle.clone().lerp(this.restPosWin, this.winner);
+    const rt = this.restTargetIdle.clone().lerp(this.restTargetWin, this.winner);
+    const pos = rp.add(new THREE.Vector3(this.mouseS.x * 0.06 * g, this.mouseS.y * 0.03 * g + Math.sin(t * 0.5) * 0.004 * (1 - this.zoom), 0));
+    const tgt = rt.add(new THREE.Vector3(this.mouseS.x * 0.25 * g, this.mouseS.y * 0.12 * g, 0));
     const fitPos = this.screenCenter.clone().addScaledVector(this.screenNormal, this.fitDist);
     pos.lerp(fitPos, this.zoom);
     tgt.lerp(this.screenCenter, this.zoom);

@@ -1,7 +1,11 @@
 {
-  "_note": "PLATSHÅLLARE. Byt mot riktig vinnare.",
-  "name": "[VINNARTEAM]",
-  "tagline": "> [VINNARPROJEKT]",
-  "motivation": "[Kort motivering från juryn. Två till tre meningar om varför just det här bidraget vann.]",
-  "members": ["[Namn 1]", "[Namn 2]", "[Namn 3]"]
+  "_note": "PLATSHÅLLARE. Byt mot det vinnande projektet (repot) och teamet bakom det.",
+  "name": "[vinnande projekt]",
+  "tagline": "> github.com/Aventyret-Hackaton/[repo]",
+  "motivation": "[Kort motivering från juryn. Två till tre meningar om varför just det här projektet vann.]",
+  "members": [
+    "[namn 1]",
+    "[namn 2]",
+    "[namn 3]"
+  ]
 }

@@ -181,3 +181,20 @@ export function whoosh(dur = 1.2) {
   n.start();
   n.stop(c.currentTime + dur + 0.1);
 }
+
+/** Tangentklick (kort brusknäpp). */
+export function keyClick() {
+  const c = ensureAudio();
+  const n = c.createBufferSource();
+  n.buffer = noiseBuffer(c, 0.06);
+  const bp = c.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 2200 + Math.random() * 900;
+  bp.Q.value = 1.4;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.2, c.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.045);
+  n.connect(bp).connect(g).connect(c.destination);
+  n.start();
+  n.stop(c.currentTime + 0.06);
+}

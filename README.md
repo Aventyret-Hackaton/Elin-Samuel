@@ -9,9 +9,10 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # typecheck + produktionsbygge i dist/
 ```
-Boot-skärmen kräver ett klick/ENTER (webbläsare blockerar ljud före användargest). Klicka igen under modemljudet för att hoppa över.
+Flöde: klick/ENTER på boot-skärmen (modemljud, klicka igen för att hoppa över) → rummet, ingen text i bild →
+klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen → statistik och personer → vinnande projekt.
 
-Testgenvägar (utan ljud): `?skip=idle`, `?skip=hud`, `?skip=winner`.
+Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=winner`.
 Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i scen 1.
 
 ## Byt platshållare mot riktiga assets (ingen kodändring)
@@ -22,7 +23,7 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 | Teamfoton | `public/team/*`, lista byggs av `npm run team` till `public/data/team.json` |
 | GitHub-statistik (alla repon i orgen) | `public/data/github.json`, hämtas med `npm run github` |
 | Vinnare, motivering | `public/data/winner.json` |
-| Texter (rubrik, CTA m.m.) | `src/config.ts` |
+| Etiketter och sökvägar | `src/config.ts` |
 
 ## Data och diagram
 `npm run github` (körs även före `npm run build`) hämtar commits, PR:er, rader, språk och tidslinje per timme för alla repon i

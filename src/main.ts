@@ -16,11 +16,11 @@ import {
 } from 'chart.js';
 import { Room } from './room';
 import { CONFIG, BASE } from './config';
-import { ensureAudio, playModem, playHum, blip, whoosh } from './audio';
+import { ensureAudio, playModem, playHum, blip, whoosh, keyClick } from './audio';
 
 Chart.register(BarController, BarElement, LineController, LineElement, PointElement, DoughnutController, ArcElement, CategoryScale, LinearScale, Filler, Legend);
 
-type State = 'gate' | 'boot' | 'idle' | 'zoom' | 'video' | 'loop' | 'reveal' | 'winner';
+type State = 'gate' | 'boot' | 'idle' | 'zoom' | 'prompt' | 'submit' | 'video' | 'loop' | 'reveal' | 'winner';
 
 interface Team {
   team: { name: string; photo: string | null }[];
@@ -174,43 +174,59 @@ function lightUp() {
     .to(room, { lit: 1, duration: 3.2, ease: 'power2.out' }, '>-0.1');
   gsap.to($('gate'), { opacity: 0, duration: 1.4, delay: 0.1, onComplete: () => $('gate').classList.add('hidden') });
   stopHum = playHum();
-  gsap.delayedCall(1.8, showIntro);
+  gsap.delayedCall(3.4, () => { state = 'idle'; });
 }
 
-function showIntro() {
-  const intro = $('intro');
-  $('kicker').textContent = '';
-  $('headline').textContent = '';
-  $('desc').textContent = '';
-  const cta = $('cta');
-  cta.textContent = CONFIG.cta;
-  cta.classList.add('hidden');
-  show(intro, 0.8);
-  const tl = gsap.timeline();
-  tl.add(typeInto($('kicker'), CONFIG.kicker, 28))
-    .add(typeInto($('headline'), CONFIG.headline, 30), '>0.1')
-    .add(typeInto($('desc'), CONFIG.description, 90), '>0.1')
-    .call(() => {
-      cta.classList.remove('hidden');
-      gsap.fromTo(cta, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5 });
-      state = 'idle';
-    });
-}
-
-// ---------- Scen 2: zoom -> video -> loop + HUD ----------
-$('cta').addEventListener('click', goZoom);
+// ---------- Scen 1 -> 2: klick på datorrutan zoomar in, prompten tar emot text, enter startar filmen ----------
+$('gl').addEventListener('click', (e) => {
+  if (state === 'idle' && room.pointOnScreen(e.clientX, e.clientY)) goZoom();
+});
+window.addEventListener('pointermove', (e) => {
+  $('gl').style.cursor = state === 'idle' && room.pointOnScreen(e.clientX, e.clientY) ? 'pointer' : 'default';
+});
 
 function goZoom() {
   if (state !== 'idle') return;
   state = 'zoom';
   blip(660, 0.08);
   whoosh(2.4);
-  stopHum?.();
-  hide($('intro'), 0.5);
-  gsap.to(room, { zoom: 1, duration: 2.8, ease: 'power3.inOut' });
-  gsap.delayedCall(2.35, startVideo);
+  gsap.to(room, { zoom: 1, duration: 2.8, ease: 'power3.inOut', onComplete: () => { state = 'prompt'; } });
 }
 
+window.addEventListener('keydown', (e) => {
+  if (state !== 'prompt' || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    submitPrompt();
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    room.promptText = room.promptText.slice(0, -1);
+    keyClick();
+    room.refreshScreen(now);
+  } else if (e.key.length === 1) {
+    e.preventDefault();
+    if (room.promptText.length < 70) {
+      room.promptText += e.key.toLowerCase(); // inga versaler
+      keyClick();
+      room.refreshScreen(now);
+    }
+  }
+});
+
+function submitPrompt() {
+  if (state !== 'prompt') return;
+  state = 'submit';
+  room.promptSubmitted = true;
+  room.refreshScreen(now);
+  blip(990, 0.08);
+  stopHum?.();
+  gsap.delayedCall(0.9, () => {
+    whoosh(1.2);
+    startVideo();
+  });
+}
+
+// ---------- Scen 2: video -> loop + HUD ----------
 function startVideo() {
   const layer = $('videoLayer');
   const v1 = $<HTMLVideoElement>('v1');
@@ -422,14 +438,14 @@ function buildHud() {
   });
   tl.from('.chart-box', { opacity: 0, y: 24, stagger: 0.25, duration: 0.6 }, 1.2);
   tl.from('.card', { opacity: 0, scale: 0.6, stagger: 0.05, duration: 0.5 }, 2.4);
-  const spin = gsap.to(ring, { rotationY: '+=360', duration: 35, ease: 'none', repeat: -1 });
+  const spin = gsap.to(ring, { rotationY: '+=360', duration: 17.5, ease: 'none', repeat: -1 });
 
   // Slutet: statistik tonas ut, personerna blir riktigt stora
   const finalAt = 9.5;
   tl.to('.charts, .hud-totals, .hud-top', { opacity: 0, y: -24, duration: 0.9, ease: 'power2.in' }, finalAt);
   tl.to(wrap, { top: '47vh', scale: 1, duration: 2.6, ease: 'power3.inOut' }, finalAt + 0.2);
   tl.to(spin, { timeScale: 0.7, duration: 2 }, finalAt + 0.2);
-  tl.add(typeInto(finalTitle, `> ${team.length} personer. en vinnare.`, 28), finalAt + 1.4);
+  tl.add(typeInto(finalTitle, `> ${team.length} personer. ett vinnande projekt.`, 28), finalAt + 1.4);
   tl.call(showNext, [], finalAt + 3.2);
 }
 
@@ -468,7 +484,7 @@ function goReveal() {
 }
 
 function showWinner() {
-  const w = winner ?? { name: '[vinnare]', tagline: '', motivation: '', members: [] };
+  const w = winner ?? { name: '[vinnande projekt]', tagline: '', motivation: '', members: [] };
   const el = $('winner');
   $('wKicker').textContent = '';
   $('wName').textContent = '';
@@ -490,6 +506,8 @@ function showWinner() {
 
 // ---------- Init + utvecklingsgenvägar ----------
 void (async () => {
+  // Terminalfonten delas upp i teckenuppsättningar: ladda svenska tecken så de syns i prompten på skärmen
+  void document.fonts.load('66px VT323', 'åäöÅÄÖé').catch(() => undefined);
   const [t, g, w] = await Promise.all([
     loadJson<Team>(CONFIG.data.team),
     loadJson<GitHubData>(CONFIG.data.github),
@@ -500,14 +518,17 @@ void (async () => {
   winner = w;
   const skip = params.get('skip');
   if (skip) {
-    // Testgenvägar utan ljud: ?skip=idle | hud | winner
+    // Testgenvägar utan ljud: ?skip=idle | prompt | hud | winner
     $('gate').classList.add('hidden');
     room.power = 1;
     room.lit = 1;
     room.setScreenState('idle', 0);
     state = 'idle';
     if (skip === 'idle') {
-      showIntro();
+      state = 'idle';
+    } else if (skip === 'prompt') {
+      room.zoom = 1;
+      state = 'prompt';
     } else if (skip === 'hud') {
       room.zoom = 1;
       room.paused = true;
