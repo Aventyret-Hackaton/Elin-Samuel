@@ -23,11 +23,11 @@ tre fullskärmsscener (rum med dator → vinnare koras i video → vinnare prese
 - **Platshållare och drop-in:** video, loop, statistik, teamfoton, vinnare och texter byts via filer/`src/config.ts`.
 - **Teamfoton:** ligger i `public/team/`, bearbetade av Samuel. `npm run team` (körs även före dev/build) bygger `team` i `stats.json` ur filnamnen (`scripts/build-team.mjs`, rör aldrig bilderna). Den lätta in-kod-behandlingen (svag overlay, scanlines, RGB-kant) behåller fotonas egna färger.
 - **Rättigheter:** repot är publikt. Filmstillbilder (`docs/moodboard/refs/`, `MOODBOARD.png`) är gitignorerade och ligger inte i historiken.
-- **Grenpolicy:** arbetet ligger på gren `feat/kampanjsajt-v1`, inte direkt på main. Inget pushat.
+- **Grenpolicy:** arbetet ligger på gren `feat/kampanjsajt-v1`, inte direkt på main. Pushad till origin (publikt repo, Aventyret-Hackaton).
 
 ## Öppna frågor
 - Kampanjens riktiga namn/rubrik (nu "HACKATHON.EXE" / "ÄVENTYRET HACKATHON 2026" som platshållare).
-- Sökväg till teamfotona ("på vinnare": mapp eller repo?).
+- Teamfotona: 28 st ligger i `public/team/`. Kontrollera att alla ska med och att namnen i `stats.json` stämmer (å/ä/ö, efternamn).
 - Webfont-licens för Replica LL (woff2) innan publicering.
 - Riktig videon (manus, längd, musik/174 BPM?) och loopklipp.
 - GitHub-orgens riktiga data: skript + token med läsrätt (`scripts/fetch-github.mjs` finns inte än).
