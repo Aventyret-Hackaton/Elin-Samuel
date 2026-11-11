@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Äventyret Hackathon 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=DotGothic16&display=swap" rel="stylesheet" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="gl"></canvas>
+
+      <!-- Scen 1: text-panel (aldrig över skärmen: ligger i vänstra halvan) -->
+      <section id="intro" class="layer hidden">
+        <div class="panel">
+          <div class="kicker" id="kicker"></div>
+          <h1 id="headline"></h1>
+          <p id="desc"></p>
+          <button id="cta" class="btn" type="button"></button>
+        </div>
+      </section>
+
+      <!-- Scen 2: fullskärmsvideo + HUD -->
+      <section id="videoLayer" class="layer hidden">
+        <video id="v1" playsinline preload="auto"></video>
+        <video id="v2" playsinline preload="auto" loop></video>
+        <div id="hud"></div>
+        <button id="next" class="btn hidden" type="button"></button>
+      </section>
+
+      <!-- Scen 3: vinnare -->
+      <section id="winner" class="layer hidden">
+        <div class="panel wide">
+          <div class="kicker" id="wKicker"></div>
+          <h2 id="wName"></h2>
+          <div class="tagline" id="wTag"></div>
+          <p id="wText"></p>
+          <ul id="wTeam"></ul>
+        </div>
+      </section>
+
+      <!-- Boot-gate: användargesten som låser upp ljud -->
+      <section id="gate" class="layer">
+        <div class="gate-log" id="gateLog"></div>
+        <div class="gate-main"><span id="gateCmd"></span><i class="cursor"></i></div>
+        <button id="gateBtn" class="enter" type="button"><kbd>ENTER</kbd><span>för att ansluta</span></button>
+        <div class="gate-foot"><span>F1 HJÄLP</span><span>F2 LJUD PÅ</span><span id="gateClock">00:00:00:00</span></div>
+      </section>
+
+      <div id="flash"></div>
+      <div id="crt"></div>
+    </div>
+  </body>
+</html>

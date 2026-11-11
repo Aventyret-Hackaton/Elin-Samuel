@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+# Replica LL är kommersiellt: committa inte fontfilen
+public/fonts/*.otf
+public/fonts/*.woff2
+
+# Moodboard-referenser (filmstillbilder, rättigheter): endast lokalt
+docs/moodboard/refs/
+docs/moodboard/MOODBOARD.png

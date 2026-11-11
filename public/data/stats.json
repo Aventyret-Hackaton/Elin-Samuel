@@ -1,0 +1,22 @@
+{
+  "_note": "MOCKDATA. Ersätts av scripts/fetch-github.mjs (GitHub-orgens riktiga siffror).",
+  "org": "hackathon-org",
+  "totals": { "repos": 12, "commits": 1843, "pull_requests": 96, "contributors": 23 },
+  "repos": [
+    { "name": "repo-alfa", "score": 94 },
+    { "name": "repo-beta", "score": 81 },
+    { "name": "repo-gamma", "score": 77 },
+    { "name": "repo-delta", "score": 63 },
+    { "name": "repo-epsilon", "score": 52 }
+  ],
+  "team": [
+    { "name": "Deltagare 01", "photo": null },
+    { "name": "Deltagare 02", "photo": null },
+    { "name": "Deltagare 03", "photo": null },
+    { "name": "Deltagare 04", "photo": null },
+    { "name": "Deltagare 05", "photo": null },
+    { "name": "Deltagare 06", "photo": null },
+    { "name": "Deltagare 07", "photo": null },
+    { "name": "Deltagare 08", "photo": null }
+  ]
+}
