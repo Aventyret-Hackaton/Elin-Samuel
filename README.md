@@ -11,9 +11,9 @@ npm run build    # typecheck + produktionsbygge i dist/
 ```
 Flöde: klick/ENTER på boot-skärmen (modemljud, klicka igen för att hoppa över) → rummet, ingen text i bild →
 klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen → statistik och personer →
-`continue? [y] [n]` (pilar/y/n väljer, ENTER bekräftar): y → persiennen dras upp och en neonskylt med repots namn syns (inget mer), n → tillbaka till rummet.
+`continue? [y] [n]` (pilar/y/n väljer, ENTER bekräftar): y → matrix-regn på datorskärmen, vinnarens reponamn avkodas och står stort i grönt, sedan åker kameran ut till rummet. n → tillbaka till rummet.
 
-Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=blinds`, `?skip=winner`.
+Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=reveal` (matrix-regnet på skärmen), `?skip=winner` (slutbilden).
 Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i scen 1.
 
 ## Byt platshållare mot riktiga assets (ingen kodändring)
@@ -23,7 +23,7 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 | Loopklippet (video-slutet, 5–10 s) | `public/media/loop.mp4` |
 | Teamfoton | `public/team/*`, lista byggs av `npm run team` till `public/data/team.json` |
 | GitHub-statistik (alla repon i orgen) | `public/data/github.json`, hämtas med `npm run github` |
-| Vinnande repo (namnet på neonskylten) | `public/data/winner.json` (`name`) |
+| Vinnande repo (namnet på datorskärmen i scen 3) | `public/data/winner.json` (`name`) |
 | Fotorummet (bild + djup, scen 1 och 3) | `public/room/room.jpg`, `room-depth.png`, `plate.json`, se `docs/room/PROMPTS.md` |
 | Etiketter och sökvägar | `src/config.ts` |
 
@@ -31,7 +31,7 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 Standard är fotorummet (`room: 'plate'` i `src/config.ts`). Kodrummet finns kvar: `?room=code`.
 - **Fotorummet** (`src/room-plate.ts` + `src/plate-shader.ts`): `public/room/room.jpg` + djupkarta, beskrivet i `public/room/plate.json`.
   En bild visar både datorn och fönstret (envy-läge). Musen ger parallax, den levande CRT-skärmen mappas in på glaset,
-  scen 3 åker in mot fönstret där fotots egen persienn dras upp och neonskylten lyser i glaset bakom.
+  Persiennen/neonskylten i fönstret (`windowView`, `blinds`, `pane`) finns kvar i koden men används inte i flödet längre.
   Tändning (med skrivbordslampan), flimmer, vinnarton och bilens ljuskägla görs i shadern.
 - **Kodrummet** (`src/room.ts`): 3D byggt i kod. Används också om `plate.json` saknas.
 
@@ -59,7 +59,7 @@ Annan källa: sätt `REPLICA_FONT_URL`. Misslyckas hämtningen används lokalt i
 ## Struktur
 - `src/room.ts` – kodrummet: 3D, ljus, kamera (musstyrd POV), zoom mot skärmen, efterbehandling, `?export=plate`
 - `src/room-plate.ts`, `src/plate-shader.ts` – fotorummet (2.5D), samma gränssnitt (`src/room-types.ts`)
-- `src/canvases.ts` – CRT-skärmens och neonskyltens 2D-innehåll, delas av båda rummen
+- `src/canvases.ts` – CRT-skärmens 2D-innehåll (prompt, matrix-regn + vinnarnamn i läget `reveal`) och neonskylten, delas av båda rummen
 - `src/plate-tools.ts` – export/kalibrering för fotorummet
 - `src/main.ts` – tillståndsmaskin: gate → boot → idle → zoom → video → loop → reveal → winner
 - `src/audio.ts` – modem, CRT-surr, blip/whoosh (WebAudio, allt syntetiserat)

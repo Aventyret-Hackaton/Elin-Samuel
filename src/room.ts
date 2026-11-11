@@ -58,6 +58,8 @@ export class Room {
   /** Text som användaren skriver i prompten på skärmen. */
   promptText = '';
   promptSubmitted = false;
+  /** Vinnarens reponamn för skärmläget 'reveal'. */
+  winnerName = '';
   private fitDist = 1;
   private screenGroup = new THREE.Group();
   private screenCenter = new THREE.Vector3(0.9, 1.2, -1.646);
@@ -351,7 +353,7 @@ export class Room {
   private drawScreen(t: number) {
     drawScreenCanvas(
       this.screenCtx,
-      { state: this.screenState, start: this.screenStart, promptText: this.promptText, promptSubmitted: this.promptSubmitted },
+      { state: this.screenState, start: this.screenStart, promptText: this.promptText, promptSubmitted: this.promptSubmitted, winnerName: this.winnerName },
       t,
     );
     this.screenTex.needsUpdate = true;
@@ -364,6 +366,14 @@ export class Room {
 
   /** Starta om skärmens inskrivna rader (när man kommer tillbaka till rummet). */
   restartScreen(now: number) {
+    this.screenStart = now;
+    this.drawScreen(now);
+  }
+
+  /** Sätt vinnarens namn och starta skärmläget 'reveal' (matrix-regn, sedan namnet). */
+  revealOnScreen(name: string, now: number) {
+    this.winnerName = name;
+    this.screenState = 'reveal';
     this.screenStart = now;
     this.drawScreen(now);
   }
@@ -492,7 +502,7 @@ export class Room {
 
     // Skärm-textur ~12 fps
     this.screenAcc += dt;
-    if (this.screenAcc > 1 / 12) {
+    if (this.screenAcc > (this.screenState === 'reveal' ? 1 / 30 : 1 / 12)) {
       this.screenAcc = 0;
       if (pw > 0.01) this.drawScreen(t);
     }

@@ -106,6 +106,8 @@ export class PlateRoom implements RoomLike {
   paused = false;
   promptText = '';
   promptSubmitted = false;
+  /** Vinnarens reponamn för skärmläget 'reveal'. */
+  winnerName = '';
   screenState: ScreenState = 'off';
 
   private mouse = new THREE.Vector2();
@@ -308,7 +310,7 @@ export class PlateRoom implements RoomLike {
   private drawScreen(t: number) {
     drawScreenCanvas(
       this.screenCtx,
-      { state: this.screenState, start: this.screenStart, promptText: this.promptText, promptSubmitted: this.promptSubmitted },
+      { state: this.screenState, start: this.screenStart, promptText: this.promptText, promptSubmitted: this.promptSubmitted, winnerName: this.winnerName },
       t,
     );
     this.screenTex.needsUpdate = true;
@@ -319,6 +321,14 @@ export class PlateRoom implements RoomLike {
   }
 
   restartScreen(now: number) {
+    this.screenStart = now;
+    this.drawScreen(now);
+  }
+
+  /** Sätt vinnarens namn och starta skärmläget 'reveal' (matrix-regn, sedan namnet). */
+  revealOnScreen(name: string, now: number) {
+    this.winnerName = name;
+    this.screenState = 'reveal';
     this.screenStart = now;
     this.drawScreen(now);
   }
@@ -510,7 +520,7 @@ export class PlateRoom implements RoomLike {
 
     // Skärm-textur ~12 fps
     this.screenAcc += dt;
-    if (this.screenAcc > 1 / 12) {
+    if (this.screenAcc > (this.screenState === 'reveal' ? 1 / 30 : 1 / 12)) {
       this.screenAcc = 0;
       if (pw > 0.01) this.drawScreen(t);
     }

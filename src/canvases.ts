@@ -1,7 +1,7 @@
 // Canvas-innehåll som delas av kodrummet (room.ts) och fotorummet (room-plate.ts):
 // CRT-skärmens text/prompt och fönstrets neonglöd/skylt. Ren 2D-ritning, inget Three.js här.
 
-export type ScreenState = 'off' | 'idle' | 'winner';
+export type ScreenState = 'off' | 'idle' | 'winner' | 'reveal';
 
 export interface ScreenContent {
   state: ScreenState;
@@ -9,6 +9,88 @@ export interface ScreenContent {
   start: number;
   promptText: string;
   promptSubmitted: boolean;
+  /** Vinnarens reponamn (visas i läget 'reveal'). */
+  winnerName?: string;
+}
+
+/** Tidslinjen i läget 'reveal' (sekunder från start). */
+export const REVEAL = {
+  /** Namnet börjar avkodas ur regnet. */
+  decodeAt: 1.4,
+  /** Sista tecknet har låst sig. */
+  lockedAt: 3.4,
+  /** Regnet har tonat ned till svag bakgrund. */
+  calmAt: 4.4,
+} as const;
+
+const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789abcdef<>/_=+*';
+const glyph = (n: number, set = GLYPHS) => set[((n % set.length) + set.length) % set.length];
+/** Smala tecken för namnets avkodning, så bredden inte hoppar (katakana är dubbelt så breda i VT323). */
+const NAME_GLYPHS = 'abcdefghijklmnopqrstuvwxyz0123456789<>/_=+*#$%&';
+/** Deterministiskt brus 0–1 ur heltal (samma bild varje gång för samma tid). */
+const hash = (a: number, b = 0) => {
+  let h = (a * 374761393 + b * 668265263) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+};
+
+/** Matrix-regn: kolumner av fallande tecken, ljusast i huvudet. */
+function drawRain(g: CanvasRenderingContext2D, t: number, w: number, h: number, alpha: number) {
+  const size = 26;
+  const cols = Math.ceil(w / size);
+  const rows = Math.ceil(h / size) + 1;
+  g.font = `${size}px "DotGothic16", VT323, monospace`;
+  g.textBaseline = 'top';
+  for (let c = 0; c < cols; c++) {
+    const speed = 9 + hash(c, 1) * 14; // rader per sekund
+    const len = 8 + Math.floor(hash(c, 2) * 18);
+    const head = (t * speed + hash(c, 3) * rows * 2) % (rows + len);
+    for (let k = 0; k < len; k++) {
+      const r = Math.floor(head) - k;
+      if (r < 0 || r >= rows) continue;
+      const fade = 1 - k / len;
+      const ch = glyph(Math.floor(hash(c * 97 + r, Math.floor(t * 12 + k)) * 1000));
+      g.fillStyle = k === 0 ? `rgba(220,255,230,${alpha})` : `rgba(107,255,151,${alpha * fade * 0.85})`;
+      g.fillText(ch, c * size, r * size);
+    }
+  }
+}
+
+/** Vinnarnamnet: varje tecken rasslar slumpmässigt tills det låser sig, vänster till höger. */
+function drawDecodedName(g: CanvasRenderingContext2D, name: string, since: number, w: number, h: number) {
+  const { decodeAt, lockedAt } = REVEAL;
+  if (since < decodeAt) return;
+  let size = 230;
+  const font = (px: number) => `${px}px VT323, monospace`;
+  g.font = font(size);
+  while (g.measureText(name).width > w * 0.86 && size > 48) {
+    size -= 6;
+    g.font = font(size);
+  }
+  const span = lockedAt - decodeAt;
+  const shown = name
+    .split('')
+    .map((ch, i) => {
+      const lockAt = decodeAt + (span * (i + 1)) / Math.max(name.length, 1);
+      if (ch === ' ' || since >= lockAt) return ch;
+      return glyph(Math.floor(hash(i, Math.floor(since * 24)) * 1000), NAME_GLYPHS);
+    })
+    .join('');
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.shadowColor = '#6bff97';
+  g.shadowBlur = since >= lockedAt ? 26 : 14;
+  g.fillStyle = '#6bff97';
+  g.fillText(shown, w / 2, h / 2 + 10);
+  // Liten etikett ovanför när namnet låst sig
+  if (since >= lockedAt) {
+    g.shadowBlur = 10;
+    g.font = '40px VT323, monospace';
+    g.globalAlpha = Math.min(1, (since - lockedAt) * 2);
+    g.fillText('> vinnande projekt', w / 2, h / 2 - size * 0.55 - 10);
+    g.globalAlpha = 1;
+  }
+  g.textAlign = 'left';
 }
 
 /** Ritar CRT-skärmen. Canvasen är 1920x1080, ritas i 1280x720-koordinater (skala 1,5 för skärpa vid full zoom). */
@@ -25,7 +107,25 @@ export function drawScreenCanvas(g: CanvasRenderingContext2D, s: ScreenContent, 
     g.shadowBlur = 14;
     g.fillStyle = main;
     g.textBaseline = 'top';
-    if (winner) {
+    if (s.state === 'reveal') {
+      const since = t - s.start;
+      const { decodeAt, calmAt } = REVEAL;
+      // Regnet: fullt först, tonas ned till svag bakgrund när namnet tar över
+      const rainA = since < decodeAt ? 1 : Math.max(0.12, 1 - ((since - decodeAt) / (calmAt - decodeAt)) * 0.88);
+      g.shadowBlur = 6;
+      drawRain(g, since, w, h, rainA);
+      // Mörk platta bakom namnet så det läses tydligt
+      if (since > decodeAt) {
+        const k = Math.min(1, (since - decodeAt) / 0.6);
+        const pg = g.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, w * 0.55);
+        pg.addColorStop(0, `rgba(4,20,10,${0.92 * k})`);
+        pg.addColorStop(1, 'rgba(4,20,10,0)');
+        g.shadowBlur = 0;
+        g.fillStyle = pg;
+        g.fillRect(0, 0, w, h);
+      }
+      drawDecodedName(g, s.winnerName ?? '[repo-namn]', since, w, h);
+    } else if (winner) {
       g.font = '200px "DotGothic16", monospace';
       g.fillText('優勝', 70, 80);
       g.font = '64px VT323, monospace';

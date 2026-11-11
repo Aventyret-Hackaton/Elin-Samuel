@@ -19,6 +19,8 @@ export interface RoomLike {
   refreshScreen(t: number): void;
   restartScreen(now: number): void;
   setScreenState(s: ScreenState, now: number): void;
+  /** Scen 3: matrix-regn på skärmen, sedan vinnarens reponamn stort i grönt. */
+  revealOnScreen(name: string, now: number): void;
   setSign(name: string | null): void;
   pointOnScreen(cx: number, cy: number, pad?: number): boolean;
   screenNdcBounds(): { minX: number; maxX: number; minY: number; maxY: number };
