@@ -308,7 +308,7 @@ function buildSlides(g: GitHubData): Slide[] {
     { value: t.repos, label: 'repon' },
     { value: t.commits, label: 'commits' },
     { value: t.pull_requests, label: 'pull requests' },
-    { value: t.contributors, label: 'bidragsgivare' },
+    { value: t.contributors, label: 'vibekådare' },
     { value: t.additions, label: 'rader kod' },
     { value: t.files, label: 'filer i repona' },
   ];
@@ -424,7 +424,10 @@ function buildHud() {
   hudTl = tl;
   tl.from('.card', { opacity: 0, scale: 0.7, stagger: 0.04, duration: 0.6 }, 0);
   gsap.to(ring, { rotationY: '+=360', duration: 10, ease: 'none', repeat: -1 }); // 2,5x snabbare än förut (25 s/varv)
-  tl.add(typeInto(finalTitle, `> ${team.length} personer. ett vinnande projekt.`, 28), 0.6);
+  // Rubriken över personerna. Antalet är antalet repon i organisationen (visas i gemener, enligt sajtens regel).
+  const repoCount = github?.totals.repos ?? 0;
+  const title = `${repoCount ? repoCount + ' ' : ''}meningslösa projekt. ett (1) mer onödigt än de andra. faktiskt. inte ditt - men datt.`;
+  tl.add(typeInto(finalTitle, `> ${title}`, 30), 0.6);
   tl.call(showContinue, [], GALLERY_SECONDS);
 }
 
