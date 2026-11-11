@@ -49,7 +49,7 @@ Byt bild: se `docs/room/PROMPTS.md`. Utvecklarlägen (bara `npm run dev`, sparar
 `npm run github` (körs även före `npm run build`) hämtar commits, PR:er, rader, språk och tidslinje per timme för alla repon i
 `Aventyret-Hackaton` via GitHub-API:t och skriver `public/data/github.json`. Token tas från `GITHUB_TOKEN` eller inloggad `gh`
 och sparas aldrig. Utan token gäller 60 anrop/timme. Misslyckas hämtningen behålls befintlig fil.
-Exkludera repon: `GITHUB_EXCLUDE=Elin-Samuel,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, bidragsgivare, rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
+Exkludera repon: `GITHUB_EXCLUDE=Elin-Samuel,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, vibekådare (bidragsgivare), rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
 Kör `npm run github` precis före lansering så siffrorna är färska.
 
 ## Typsnitt

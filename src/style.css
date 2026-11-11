@@ -108,7 +108,7 @@ p { margin: 0; }
 
 
 
-.hud-final { position: absolute; left: 0; right: 0; top: 6vh; text-align: center; font-size: clamp(26px, 3vw, 58px); letter-spacing: 0.08em; color: var(--cyan); text-shadow: 0 0 14px rgba(47, 212, 224, 0.7); min-height: 1.2em; }
+.hud-final { position: absolute; left: 5vw; right: 5vw; top: 5vh; text-align: center; font-size: clamp(16px, 1.8vw, 34px); letter-spacing: 0.08em; color: var(--cyan); text-shadow: 0 0 14px rgba(47, 212, 224, 0.7); min-height: 1.2em; }
 
 .ring-wrap { position: absolute; left: 50%; top: 87vh; width: 0; height: 0; perspective: 1400px; transform-origin: 50% 50%; }
 .ring { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
