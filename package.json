@@ -11,10 +11,10 @@
     "predev": "node scripts/fetch-font.mjs && node scripts/build-team.mjs",
     "prebuild": "node scripts/fetch-font.mjs && node scripts/build-team.mjs && node scripts/fetch-github.mjs",
     "font": "node scripts/fetch-font.mjs",
-    "github": "node scripts/fetch-github.mjs"
+    "github": "node scripts/fetch-github.mjs",
+    "film": "node film/render.mjs"
   },
   "dependencies": {
-    "chart.js": "^4.6.1",
     "gsap": "^3.15.1",
     "postprocessing": "^6.39.6",
     "three": "^0.187.0"

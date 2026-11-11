@@ -9,6 +9,10 @@ public/fonts/*.woff2
 docs/moodboard/refs/
 docs/moodboard/MOODBOARD.png
 
+# Film: renderade filer och scenklipp (stora, genereras lokalt)
+film/out/
+film/clips/
+
 # Fotorummets exporterade platshållare (?export=plate), återskapas när som helst
 public/room/export-*
 public/room/plate-export.json
