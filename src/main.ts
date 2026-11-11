@@ -1,16 +1,36 @@
 import './style.css';
 import gsap from 'gsap';
+import {
+  Chart,
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  DoughnutController,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  Filler,
+  Legend,
+} from 'chart.js';
 import { Room } from './room';
 import { CONFIG, BASE } from './config';
 import { ensureAudio, playModem, playHum, blip, whoosh } from './audio';
 
+Chart.register(BarController, BarElement, LineController, LineElement, PointElement, DoughnutController, ArcElement, CategoryScale, LinearScale, Filler, Legend);
+
 type State = 'gate' | 'boot' | 'idle' | 'zoom' | 'video' | 'loop' | 'reveal' | 'winner';
 
-interface Stats {
+interface Team {
+  team: { name: string; photo: string | null }[];
+}
+interface GitHubData {
   org: string;
   totals: Record<string, number>;
-  repos: { name: string; score: number }[];
-  team: { name: string; photo: string | null }[];
+  repos: { name: string; commits: number }[];
+  timeline: { label: string; commits: number; cumulative: number }[];
+  languages: { name: string; share: number }[];
 }
 interface Winner {
   name: string;
@@ -28,8 +48,11 @@ let now = 0;
 let stopHum: (() => void) | null = null;
 let stopModem: (() => void) | null = null;
 let bootTl: gsap.core.Timeline | null = null;
-let stats: Stats | null = null;
+let team: Team['team'] = [];
+let github: GitHubData | null = null;
 let winner: Winner | null = null;
+let charts: Chart[] = [];
+let hudTl: gsap.core.Timeline | null = null;
 
 // ---------- Render-loop ----------
 let last = performance.now();
@@ -81,9 +104,13 @@ function glitch(ms = 550) {
 
 // ---------- Scen 0/1: gate, modem, tänd-sekvens ----------
 $('gateCmd').textContent = '';
-typeInto($('gateCmd'), '> BOOT ' + CONFIG.bootName, 22);
-$('gateBtn').addEventListener('click', startBoot);
+typeInto($('gateCmd'), '> boot ' + CONFIG.bootName, 22);
+$('gateBtn').addEventListener('click', (e) => {
+  e.stopPropagation(); // annars bubblar klicket till #gate och hoppar över modemet direkt
+  startBoot();
+});
 window.addEventListener('keydown', (e) => {
+  if (e.repeat) return;
   if (e.key === 'Enter' || e.key === ' ') {
     if (state === 'gate') startBoot();
     else if (state === 'boot') skipBoot();
@@ -96,27 +123,27 @@ $('gate').addEventListener('click', () => {
 function startBoot() {
   if (state !== 'gate') return;
   state = 'boot';
+  bootStartedAt = performance.now();
   ensureAudio();
   const modem = playModem();
   stopModem = modem.stop;
   $('gateBtn').classList.add('hidden');
-  $('gateCmd').textContent = '> CONNECTING';
+  $('gateCmd').textContent = '> connecting';
   const log = $('gateLog');
   const lines: [number, string][] = [
-    [0.4, 'ATZ\nOK'],
-    [0.8, 'ATDT 555-1234'],
-    [2.2, 'CARRIER DETECTED'],
-    [3.0, 'CONNECT 56000/V90'],
-    [4.2, 'HANDSHAKE ............ ok'],
-    [5.4, 'AUTH: GUEST ............ ok'],
-    [6.6, 'READY.'],
+    [0.4, 'atz\nok'],
+    [0.8, 'atdt 555-1234'],
+    [2.2, 'carrier detected'],
+    [3.0, 'connect 56000/v90'],
+    [4.2, 'handshake ............ ok'],
+    [5.4, 'auth: guest ............ ok'],
+    [6.6, 'ready.'],
   ];
   const tl = gsap.timeline();
   lines.forEach(([t, l]) => tl.call(() => { log.textContent += (log.textContent ? '\n' : '') + l; }, [], t));
-  tl.call(() => { $('gateCmd').textContent = '> LOADING WORLD'; }, [], 4.0);
+  tl.call(() => { $('gateCmd').textContent = '> loading world'; }, [], 4.0);
   tl.call(lightUp, [], modem.duration - 1.0);
   bootTl = tl;
-  // klockan i foten
   const clk = $('gateClock');
   const t0 = performance.now();
   const iv = setInterval(() => {
@@ -126,7 +153,9 @@ function startBoot() {
   }, 80);
 }
 
+let bootStartedAt = 0;
 function skipBoot() {
+  if (performance.now() - bootStartedAt < 1500) return; // skydd mot dubbelklick
   stopModem?.();
   bootTl?.timeScale(14);
 }
@@ -212,56 +241,164 @@ function startLoop() {
 }
 
 function hex(i: number) {
-  return '0x' + (((i + 7) * 2654435761) >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  return '0x' + (((i + 7) * 2654435761) >>> 0).toString(16).padStart(8, '0');
+}
+
+const nf = (n: number) => Math.round(n).toLocaleString('sv-SE');
+
+function styleCharts() {
+  const px = Math.max(13, Math.round(window.innerWidth * 0.0105));
+  Chart.defaults.font.family = 'VT323, monospace';
+  Chart.defaults.font.size = px;
+  Chart.defaults.color = '#8fe3ec';
+  Chart.defaults.animation = { duration: 1700, easing: 'easeOutQuart' };
+  Chart.defaults.events = []; // HUD:n är inte interaktiv
+}
+
+const GRID = 'rgba(47, 212, 224, 0.1)';
+const PALETTE = ['#2fd4e0', '#ff3d7f', '#6bff97', '#ffb15c', '#3d7bff', '#b58cff', '#8a8f98'];
+
+function chartBox(parent: HTMLElement, title: string, cls = '') {
+  const box = document.createElement('div');
+  box.className = 'chart-box ' + cls;
+  box.innerHTML = `<div class="chart-title">${title}</div><div class="cv"><canvas></canvas></div>`;
+  parent.appendChild(box);
+  return box.querySelector('canvas') as HTMLCanvasElement;
+}
+
+function buildCharts(host: HTMLElement, g: GitHubData) {
+  styleCharts();
+  const tl = g.timeline;
+  const maxHour = Math.max(1, ...tl.map((t) => t.commits));
+  charts.push(
+    new Chart(chartBox(host, 'commits över tid', 'wide'), {
+      data: {
+        labels: tl.map((t) => t.label),
+        datasets: [
+          { type: 'bar', data: tl.map((t) => t.commits), backgroundColor: 'rgba(255, 61, 127, 0.7)', borderWidth: 0, barPercentage: 0.12, categoryPercentage: 1, yAxisID: 'y1' },
+          {
+            type: 'line',
+            data: tl.map((t) => t.cumulative),
+            borderColor: '#2fd4e0',
+            backgroundColor: 'rgba(47, 212, 224, 0.16)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 0,
+            borderWidth: 1,
+            yAxisID: 'y',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: GRID, lineWidth: 0.5 }, border: { color: GRID } },
+          y: { beginAtZero: true, grid: { color: GRID, lineWidth: 0.5 }, border: { display: false } },
+          y1: { display: false, beginAtZero: true, max: maxHour * 3.2 },
+        },
+      },
+    }),
+  );
+
+  const top = g.repos.filter((r) => r.commits > 0).slice(0, 8);
+  charts.push(
+    new Chart(chartBox(host, 'commits per repo'), {
+      type: 'bar',
+      data: {
+        labels: top.map((r) => `${r.name.toLowerCase()} · ${r.commits}`),
+        datasets: [{ data: top.map((r) => r.commits), backgroundColor: top.map((_, i) => (i === 0 ? '#ff3d7f' : '#2fd4e0')), borderWidth: 0, barThickness: 3 }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, grid: { color: GRID, lineWidth: 0.5 }, border: { display: false } },
+          y: { grid: { display: false }, border: { color: GRID }, ticks: { autoSkip: false } },
+        },
+      },
+    }),
+  );
+
+  charts.push(
+    new Chart(chartBox(host, 'språk'), {
+      type: 'doughnut',
+      data: {
+        labels: g.languages.map((l) => `${l.name.toLowerCase()} ${Math.round(l.share * 100)}%`),
+        datasets: [{ data: g.languages.map((l) => l.share), backgroundColor: PALETTE, borderColor: '#0a0807', borderWidth: 3 }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '88%',
+        plugins: { legend: { position: 'right', labels: { boxWidth: 10, boxHeight: 10, padding: 8 } } },
+      },
+    }),
+  );
 }
 
 function buildHud() {
   const hud = $('hud');
+  charts.forEach((c) => c.destroy());
+  charts = [];
   hud.innerHTML = '';
-  const s = stats;
-  if (!s) {
-    showNext();
-    return;
-  }
-  const labels: Record<string, string> = { repos: 'REPOSITORIES', commits: 'COMMITS', pull_requests: 'PULL REQUESTS', contributors: 'DELTAGARE' };
+  hudTl?.kill();
+
+  const labels: [string, string][] = [
+    ['repos', 'repon'],
+    ['commits', 'commits'],
+    ['pull_requests', 'pull requests'],
+    ['contributors', 'bidragsgivare'],
+    ['additions', 'rader tillagda'],
+  ];
+  const g = github;
 
   const top = document.createElement('div');
   top.className = 'hud-top';
   hud.appendChild(top);
 
+  const counters: { el: HTMLElement; v: number }[] = [];
   const totals = document.createElement('div');
   totals.className = 'hud-totals';
-  const counters: { el: HTMLElement; v: number }[] = [];
-  for (const [k, v] of Object.entries(s.totals)) {
-    const d = document.createElement('div');
-    d.className = 'stat';
-    d.innerHTML = `<div class="n">0</div><div class="l">${labels[k] ?? k.toUpperCase()}</div>`;
-    totals.appendChild(d);
-    counters.push({ el: d.querySelector('.n') as HTMLElement, v });
+  if (g) {
+    for (const [k, label] of labels) {
+      const d = document.createElement('div');
+      d.className = 'stat';
+      d.innerHTML = `<div class="n">0</div><div class="l">${label}</div>`;
+      totals.appendChild(d);
+      counters.push({ el: d.querySelector('.n') as HTMLElement, v: g.totals[k] ?? 0 });
+    }
   }
   hud.appendChild(totals);
 
-  const repos = document.createElement('div');
-  repos.className = 'hud-repos';
-  const max = Math.max(...s.repos.map((r) => r.score));
-  s.repos.forEach((r, i) => {
-    const d = document.createElement('div');
-    d.className = 'repo' + (i === 0 ? ' win' : '');
-    d.innerHTML = `<span>${r.name.toUpperCase()}</span><span>${r.score}</span><div class="bar"><i data-w="${(r.score / max) * 100}"></i></div>`;
-    repos.appendChild(d);
-  });
-  hud.appendChild(repos);
+  const chartsHost = document.createElement('div');
+  chartsHost.className = 'charts';
+  hud.appendChild(chartsHost);
+  if (g) buildCharts(chartsHost, g);
 
-  // Foto-ring (duoton/glitch via CSS)
+  const finalTitle = document.createElement('div');
+  finalTitle.className = 'hud-final';
+  hud.appendChild(finalTitle);
+
+  // Foto-ring: små längst ner, jättestora på slutet
   const wrap = document.createElement('div');
   wrap.className = 'ring-wrap';
   const ring = document.createElement('div');
   ring.className = 'ring';
   wrap.appendChild(ring);
-  const n = s.team.length;
+  const n = Math.max(team.length, 1);
+  // Korten renderas i slutstorlek (skarpa) och skalas ned i början, så de är crisp när de är jättestora
   const cardW = Math.min(window.innerWidth * 0.09, 170);
-  const R = Math.max(260, (n * cardW * 1.25) / (2 * Math.PI));
-  s.team.forEach((m, i) => {
+  const bigW = Math.min(window.innerHeight * 0.58, 700);
+  const s0 = cardW / bigW;
+  const R = Math.max(260, (n * bigW * 1.12) / (2 * Math.PI));
+  wrap.style.setProperty('--cw', `${bigW}px`);
+  wrap.style.perspective = `${1400 / s0}px`;
+  gsap.set(wrap, { scale: s0 });
+  team.forEach((m, i) => {
     const c = document.createElement('div');
     c.className = 'card';
     const ph = document.createElement('div');
@@ -276,17 +413,24 @@ function buildHud() {
   hud.appendChild(wrap);
 
   const tl = gsap.timeline({ delay: 0.6 });
-  tl.add(typeInto(top, `> ORG: ${s.org.toUpperCase()} // SCAN COMPLETE`, 34));
-  tl.from('.stat', { opacity: 0, x: -30, stagger: 0.25, duration: 0.5 }, '>0.1');
+  hudTl = tl;
+  tl.add(typeInto(top, `> org: ${(g?.org ?? 'hackathon').toLowerCase()} // scan complete`, 34));
+  tl.from('.stat', { opacity: 0, x: -30, stagger: 0.22, duration: 0.5 }, '>0.1');
   counters.forEach((c, i) => {
     const o = { v: 0 };
-    tl.to(o, { v: c.v, duration: 1.4, ease: 'power2.out', onUpdate: () => { c.el.textContent = Math.round(o.v).toLocaleString('sv-SE'); } }, 1.4 + i * 0.25);
+    tl.to(o, { v: c.v, duration: 1.4, ease: 'power2.out', onUpdate: () => { c.el.textContent = nf(o.v); } }, 1.2 + i * 0.22);
   });
-  tl.from('.repo', { opacity: 0, x: 30, stagger: 0.18, duration: 0.4 }, 1.6);
-  tl.to('.repo .bar i', { width: (_i: number, el: Element) => (el as HTMLElement).dataset.w + '%', duration: 1.1, stagger: 0.15, ease: 'power3.out' }, 2.0);
-  tl.from('.card', { opacity: 0, scale: 0.6, stagger: 0.12, duration: 0.5 }, 2.6);
-  tl.to(ring, { rotationY: '+=360', duration: 60, ease: 'none', repeat: -1 }, 2.6);
-  tl.call(showNext, [], 6.5);
+  tl.from('.chart-box', { opacity: 0, y: 24, stagger: 0.25, duration: 0.6 }, 1.2);
+  tl.from('.card', { opacity: 0, scale: 0.6, stagger: 0.05, duration: 0.5 }, 2.4);
+  const spin = gsap.to(ring, { rotationY: '+=360', duration: 35, ease: 'none', repeat: -1 });
+
+  // Slutet: statistik tonas ut, personerna blir riktigt stora
+  const finalAt = 9.5;
+  tl.to('.charts, .hud-totals, .hud-top', { opacity: 0, y: -24, duration: 0.9, ease: 'power2.in' }, finalAt);
+  tl.to(wrap, { top: '47vh', scale: 1, duration: 2.6, ease: 'power3.inOut' }, finalAt + 0.2);
+  tl.to(spin, { timeScale: 0.7, duration: 2 }, finalAt + 0.2);
+  tl.add(typeInto(finalTitle, `> ${team.length} personer. en vinnare.`, 28), finalAt + 1.4);
+  tl.call(showNext, [], finalAt + 3.2);
 }
 
 function showNext() {
@@ -305,6 +449,10 @@ function goReveal() {
   whoosh(1.6);
   glitch(600);
   gsap.delayedCall(0.3, () => {
+    hudTl?.kill();
+    gsap.killTweensOf('.ring');
+    charts.forEach((c) => c.destroy());
+    charts = [];
     $<HTMLVideoElement>('v1').pause();
     $<HTMLVideoElement>('v2').pause();
     $('videoLayer').classList.add('hidden');
@@ -320,7 +468,7 @@ function goReveal() {
 }
 
 function showWinner() {
-  const w = winner ?? { name: '[VINNARE]', tagline: '', motivation: '', members: [] };
+  const w = winner ?? { name: '[vinnare]', tagline: '', motivation: '', members: [] };
   const el = $('winner');
   $('wKicker').textContent = '';
   $('wName').textContent = '';
@@ -342,8 +490,14 @@ function showWinner() {
 
 // ---------- Init + utvecklingsgenvägar ----------
 void (async () => {
-  stats = await loadJson<Stats>(CONFIG.data.stats);
-  winner = await loadJson<Winner>(CONFIG.data.winner);
+  const [t, g, w] = await Promise.all([
+    loadJson<Team>(CONFIG.data.team),
+    loadJson<GitHubData>(CONFIG.data.github),
+    loadJson<Winner>(CONFIG.data.winner),
+  ]);
+  team = t?.team ?? [];
+  github = g;
+  winner = w;
   const skip = params.get('skip');
   if (skip) {
     // Testgenvägar utan ljud: ?skip=idle | hud | winner

@@ -332,21 +332,21 @@ export class Room {
         g.font = '200px "DotGothic16", monospace';
         g.fillText('勝者', 70, 80);
         g.font = '64px VT323, monospace';
-        g.fillText('> WINNER SELECTED_', 80, 400);
-        g.fillText('> ' + (Math.floor(t * 2) % 2 ? 'ACCESS GRANTED' : 'ACCESS GRANTED_'), 80, 480);
+        g.fillText('> winner selected_', 80, 400);
+        g.fillText('> ' + (Math.floor(t * 2) % 2 ? 'access granted' : 'access granted_'), 80, 480);
       } else {
         g.font = '78px VT323, monospace';
         const lines = [
-          '> HACKATHON OS 26.11',
-          '> SCANNING REPOS ........ OK',
-          '> CONTRIBUTORS ......... OK',
-          '> JUDGING .............. READY',
+          '> hackathon os 26.11',
+          '> scanning repos ........ ok',
+          '> contributors ......... ok',
+          '> judging .............. ready',
           '',
         ];
         const since = t - this.screenStart;
         const visible = Math.min(lines.length, Math.floor(since * 2.2));
         lines.slice(0, visible).forEach((l, i) => g.fillText(l, 50, 50 + i * 100));
-        g.fillText('> AWAITING INPUT' + (Math.floor(t * 2) % 2 ? '_' : ' '), 50, 50 + 5 * 100);
+        g.fillText('> awaiting input' + (Math.floor(t * 2) % 2 ? '_' : ' '), 50, 50 + 5 * 100);
       }
       g.shadowBlur = 0;
     }

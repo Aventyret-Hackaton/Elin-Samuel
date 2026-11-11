@@ -1,34 +1,4 @@
 {
-  "_note": "MOCKDATA. Ersätts av scripts/fetch-github.mjs (GitHub-orgens riktiga siffror).",
-  "org": "hackathon-org",
-  "totals": {
-    "repos": 12,
-    "commits": 1843,
-    "pull_requests": 96,
-    "contributors": 23
-  },
-  "repos": [
-    {
-      "name": "repo-alfa",
-      "score": 94
-    },
-    {
-      "name": "repo-beta",
-      "score": 81
-    },
-    {
-      "name": "repo-gamma",
-      "score": 77
-    },
-    {
-      "name": "repo-delta",
-      "score": 63
-    },
-    {
-      "name": "repo-epsilon",
-      "score": 52
-    }
-  ],
   "team": [
     {
       "name": "Anna K",

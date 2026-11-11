@@ -1,0 +1,230 @@
+{
+  "org": "Aventyret-Hackaton",
+  "generatedAt": "2026-11-11T14:38:10.739Z",
+  "totals": {
+    "repos": 9,
+    "commits": 99,
+    "pull_requests": 19,
+    "contributors": 16,
+    "additions": 72105,
+    "deletions": 5253
+  },
+  "repos": [
+    {
+      "name": "ymca",
+      "language": "TypeScript",
+      "commits": 39,
+      "pull_requests": 9,
+      "merged_pull_requests": 7,
+      "contributors": 3,
+      "additions": 6023,
+      "deletions": 427,
+      "pushed_at": "2026-11-11T14:36:54Z"
+    },
+    {
+      "name": "party",
+      "language": "JavaScript",
+      "commits": 24,
+      "pull_requests": 2,
+      "merged_pull_requests": 2,
+      "contributors": 3,
+      "additions": 7496,
+      "deletions": 3152,
+      "pushed_at": "2026-11-11T14:36:57Z"
+    },
+    {
+      "name": "hackaton",
+      "language": "Shell",
+      "commits": 19,
+      "pull_requests": 3,
+      "merged_pull_requests": 2,
+      "contributors": 3,
+      "additions": 18267,
+      "deletions": 648,
+      "pushed_at": "2026-11-11T14:34:30Z"
+    },
+    {
+      "name": "jurassic-run",
+      "language": "TypeScript",
+      "commits": 5,
+      "pull_requests": 5,
+      "merged_pull_requests": 1,
+      "contributors": 2,
+      "additions": 30926,
+      "deletions": 696,
+      "pushed_at": "2026-11-11T14:11:51Z"
+    },
+    {
+      "name": "Elin-Samuel",
+      "language": "TypeScript",
+      "commits": 4,
+      "pull_requests": 0,
+      "merged_pull_requests": 0,
+      "contributors": 1,
+      "additions": 6230,
+      "deletions": 56,
+      "pushed_at": "2026-11-11T14:31:57Z"
+    },
+    {
+      "name": "homehero",
+      "language": "HTML",
+      "commits": 4,
+      "pull_requests": 0,
+      "merged_pull_requests": 0,
+      "contributors": 1,
+      "additions": 597,
+      "deletions": 20,
+      "pushed_at": "2026-11-11T14:08:30Z"
+    },
+    {
+      "name": "konfetti",
+      "language": "JavaScript",
+      "commits": 2,
+      "pull_requests": 0,
+      "merged_pull_requests": 0,
+      "contributors": 1,
+      "additions": 2378,
+      "deletions": 254,
+      "pushed_at": "2026-11-11T14:03:36Z"
+    },
+    {
+      "name": "carpesignum",
+      "language": null,
+      "commits": 2,
+      "pull_requests": 0,
+      "merged_pull_requests": 0,
+      "contributors": 2,
+      "additions": 188,
+      "deletions": 0,
+      "pushed_at": "2026-11-11T12:47:20Z"
+    },
+    {
+      "name": "repo-config-test",
+      "language": null,
+      "commits": 0,
+      "pull_requests": 0,
+      "merged_pull_requests": 0,
+      "contributors": 0,
+      "additions": 0,
+      "deletions": 0,
+      "pushed_at": "2026-11-11T12:55:19Z"
+    }
+  ],
+  "timeline": [
+    {
+      "t": "2026-11-11T09:00:00.000Z",
+      "label": "10:00",
+      "commits": 1,
+      "cumulative": 1
+    },
+    {
+      "t": "2026-11-11T10:00:00.000Z",
+      "label": "11:00",
+      "commits": 7,
+      "cumulative": 8
+    },
+    {
+      "t": "2026-11-11T11:00:00.000Z",
+      "label": "12:00",
+      "commits": 7,
+      "cumulative": 15
+    },
+    {
+      "t": "2026-11-11T12:00:00.000Z",
+      "label": "13:00",
+      "commits": 24,
+      "cumulative": 39
+    },
+    {
+      "t": "2026-11-11T13:00:00.000Z",
+      "label": "14:00",
+      "commits": 30,
+      "cumulative": 69
+    },
+    {
+      "t": "2026-11-11T14:00:00.000Z",
+      "label": "15:00",
+      "commits": 30,
+      "cumulative": 99
+    }
+  ],
+  "languages": [
+    {
+      "name": "Shell",
+      "bytes": 375361,
+      "share": 0.5000113226900047
+    },
+    {
+      "name": "TypeScript",
+      "bytes": 151200,
+      "share": 0.20141067396647153
+    },
+    {
+      "name": "JavaScript",
+      "bytes": 113966,
+      "share": 0.15181196342105088
+    },
+    {
+      "name": "HTML",
+      "bytes": 36492,
+      "share": 0.048610306312066656
+    },
+    {
+      "name": "CSS",
+      "bytes": 34572,
+      "share": 0.046052710452174954
+    },
+    {
+      "name": "Dockerfile",
+      "bytes": 32315,
+      "share": 0.04304620323562518
+    },
+    {
+      "name": "annat",
+      "bytes": 6799,
+      "share": 0.009056819922606084
+    }
+  ],
+  "topContributors": [
+    {
+      "login": "claracollman",
+      "commits": 24
+    },
+    {
+      "login": "perarnborg",
+      "commits": 15
+    },
+    {
+      "login": "jbergqvist",
+      "commits": 12
+    },
+    {
+      "login": "aejlindberg",
+      "commits": 11
+    },
+    {
+      "login": "signegab",
+      "commits": 7
+    },
+    {
+      "login": "akkilstrom",
+      "commits": 5
+    },
+    {
+      "login": "Camillanil82",
+      "commits": 4
+    },
+    {
+      "login": "samuelbrynolf",
+      "commits": 4
+    },
+    {
+      "login": "abeijnoff",
+      "commits": 4
+    },
+    {
+      "login": "stefangustafson",
+      "commits": 4
+    }
+  ]
+}
