@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "team": "node scripts/build-team.mjs",
+    "predev": "node scripts/build-team.mjs",
+    "prebuild": "node scripts/build-team.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

@@ -21,6 +21,8 @@ tre fullskärmsscener (rum med dator → vinnare koras i video → vinnare prese
 - **Video:** renderas av Claude själva (platshållare nu: ffmpeg-genererade gradienter). Loop som separat klipp
   för att undvika seek-hicka.
 - **Platshållare och drop-in:** video, loop, statistik, teamfoton, vinnare och texter byts via filer/`src/config.ts`.
+- **Teamfoton:** ligger i `public/team/`, bearbetade av Samuel. `npm run team` (körs även före dev/build) bygger `team` i `stats.json` ur filnamnen (`scripts/build-team.mjs`, rör aldrig bilderna). Den lätta in-kod-behandlingen (svag overlay, scanlines, RGB-kant) behåller fotonas egna färger.
+- **Rättigheter:** repot är publikt. Filmstillbilder (`docs/moodboard/refs/`, `MOODBOARD.png`) är gitignorerade och ligger inte i historiken.
 - **Grenpolicy:** arbetet ligger på gren `feat/kampanjsajt-v1`, inte direkt på main. Inget pushat.
 
 ## Öppna frågor

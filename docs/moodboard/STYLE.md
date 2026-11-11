@@ -2,7 +2,7 @@
 
 Källa: `MOODBOARD.png` (tavla 07 "Filmisk realism och 3D"). Övriga tavlor i den äldre Funtech-moodboarden
 (beige/grön lekfull riktning, Rubik Mono, viktning 70/20/10) **gäller inte** och är struket.
-`refs/` innehåller enskilda referensbilder ur tavlan.
+`refs/` innehåller enskilda referensbilder ur tavlan. Både `refs/` och `MOODBOARD.png` är gitignorerade (filmstillbilder, rättigheter) och finns bara lokalt.
 Status: **UTKAST, väntar på godkännande.** Inget byggs förrän detta är godkänt.
 
 ## Riktning

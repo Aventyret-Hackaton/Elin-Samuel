@@ -112,11 +112,12 @@ p { margin: 0; }
 
 .ring-wrap { position: absolute; left: 50%; bottom: 3vh; width: 0; height: 0; perspective: 1400px; }
 .ring { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
-.card { position: absolute; width: 9vw; max-width: 170px; aspect-ratio: 1; left: -4.5vw; top: -9vw; backface-visibility: hidden; filter: drop-shadow(2px 0 0 rgba(255, 0, 80, 0.55)) drop-shadow(-2px 0 0 rgba(0, 200, 255, 0.55)); }
-.card .ph { position: absolute; inset: 0; background-size: cover; background-position: center; filter: grayscale(1) contrast(1.3) brightness(0.9); }
+.card { position: absolute; width: 9vw; max-width: 170px; aspect-ratio: 1; left: -4.5vw; top: -9vw; backface-visibility: hidden; filter: drop-shadow(1px 0 0 rgba(255, 0, 80, 0.3)) drop-shadow(-1px 0 0 rgba(0, 200, 255, 0.3)); }
+.card .ph { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.card .ph.ghost { filter: grayscale(1) contrast(1.3) brightness(0.9); }
 .card .ph.ghost { background: radial-gradient(circle at 50% 36%, #8a8a8a 0 17%, transparent 18%), radial-gradient(ellipse at 50% 100%, #8a8a8a 0 36%, transparent 37%), #222; }
-.card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, #7a2cff, #2fd4e0); mix-blend-mode: color; opacity: 0.85; }
-.card::before { content: ''; position: absolute; inset: 0; z-index: 2; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0, rgba(0, 0, 0, 0.35) 1px, transparent 1px, transparent 3px); }
+.card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, #7a2cff, #2fd4e0); mix-blend-mode: soft-light; opacity: 0.12; }
+.card::before { content: ''; position: absolute; inset: 0; z-index: 2; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0, rgba(0, 0, 0, 0.12) 1px, transparent 1px, transparent 3px); }
 .card .id { position: absolute; left: 6px; bottom: 5px; z-index: 3; font-size: 14px; color: #c9a2ff; }
 .card .jp { position: absolute; right: 6px; top: 4px; z-index: 3; font-family: 'DotGothic16', monospace; font-size: 18px; color: var(--cyan); writing-mode: vertical-rl; }
 .card .name { position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px; text-align: center; font-family: var(--font); font-size: clamp(11px, 0.9vw, 16px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream); }

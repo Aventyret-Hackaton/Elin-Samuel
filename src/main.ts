@@ -266,7 +266,7 @@ function buildHud() {
     c.className = 'card';
     const ph = document.createElement('div');
     ph.className = 'ph' + (m.photo ? '' : ' ghost');
-    if (m.photo) ph.style.backgroundImage = `url(${BASE}team/${m.photo})`;
+    if (m.photo) ph.style.backgroundImage = `url("${BASE}team/${encodeURIComponent(m.photo)}")`;
     c.appendChild(ph);
     c.insertAdjacentHTML('beforeend', `<span class="id">${hex(i)}</span><span class="jp">警告</span><span class="name">${m.name}</span>`);
     gsap.set(c, { transformOrigin: `50% 50% ${-R}px`, rotationY: (i * 360) / n });
