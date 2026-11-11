@@ -45,8 +45,19 @@ Elin tog fram en AI-bild (`public/room/room.jpg`, 2000×1116) där datorn och f�
 Verifierat: vila, tändning (skärm → lampa → rum), zoom, persiennen halvvägs och uppe med skylt, åkningens mittpunkt, `tsc` + `vite build`.
 Inte verifierat: Y-övergången i realtid (dold panel), Safari/Firefox.
 
+## Uppdatering: vinnaren på datorskärmen
+Elin ville visa vinnarens reponamn på datorskärmen i stället för neonskylten i fönstret.
+- Nytt skärmläge `reveal` (`src/canvases.ts`): matrix-regn (katakana/hex) i ~1,4 s, sedan avkodas namnet tecken för tecken
+  vänster till höger (låst vid 3,4 s) och står stort i grönt med `> vinnande projekt` ovanför. Regnet tonas ned till svag bakgrund.
+  Tidslinjen ligger i `REVEAL` och används både av ritningen och av ljud/kamera i `main.ts`.
+- Avkodningen använder smala tecken: katakana är dubbelt så breda i VT323 och fick namnet att hoppa i bredd.
+- Scen 3 (`goReveal` i `main.ts`): kameran står kvar inzoomad, tangentklick rasslar under avkodningen, ett pip när namnet låst sig,
+  sedan åker kameran ut till rummet på 4,5 s. Fönstret, persiennen och skylten används inte längre (koden finns kvar).
+- Testgenvägar: `?skip=reveal` (inzoomat från början), `?skip=winner` (slutbilden). `?skip=blinds` är borttagen.
+- Verifierat i realtid: hela Y-vägen från HUD → regn → namn → utåkning.
+
 ## Öppna frågor
-- **Y-övergången är inte sedd i realtid** (webbläsarpanelen var dold, så animationerna stod still). Slutlägen och mittpunkt är kontrollerade.
+- Ljudet i scen 3 (tangentklick + pip) är inte avlyssnat av en människa.
 - **Djupkartan** är grov och handgjord. En riktig (Depth Anything eller liknande) ger bättre parallax.
 - **Upplösning:** bilden är 2000 px. 4K vore bättre för retina och zoomen mot fönstret.
 - **Bildrättigheter:** kontrollera AI-verktygets villkor (publikt repo).
