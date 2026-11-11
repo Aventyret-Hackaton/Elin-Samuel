@@ -1,19 +1,5 @@
 import './style.css';
 import gsap from 'gsap';
-import {
-  Chart,
-  BarController,
-  BarElement,
-  LineController,
-  LineElement,
-  PointElement,
-  DoughnutController,
-  ArcElement,
-  CategoryScale,
-  LinearScale,
-  Filler,
-  Legend,
-} from 'chart.js';
 import { Room } from './room';
 import { PlateRoom } from './room-plate';
 import type { PlateJson, RoomLike } from './room-types';
@@ -22,7 +8,6 @@ import { CONFIG, BASE } from './config';
 import { ensureAudio, playModem, playHum, blip, whoosh, keyClick } from './audio';
 import { REVEAL } from './canvases';
 
-Chart.register(BarController, BarElement, LineController, LineElement, PointElement, DoughnutController, ArcElement, CategoryScale, LinearScale, Filler, Legend);
 
 type State = 'gate' | 'boot' | 'idle' | 'zoom' | 'prompt' | 'submit' | 'video' | 'loop' | 'choose' | 'reveal' | 'winner';
 
@@ -32,9 +17,9 @@ interface Team {
 interface GitHubData {
   org: string;
   totals: Record<string, number>;
-  repos: { name: string; commits: number }[];
-  timeline: { label: string; commits: number; cumulative: number }[];
-  languages: { name: string; share: number }[];
+  peakHour: { commits: number; label: string } | null;
+  languages: { name: string; bytes: number; share: number; repos: number }[];
+  stacks: { name: string; repos: number }[];
 }
 interface Winner {
   name: string; // repots/projektets namn, visas på neonskylten
@@ -78,7 +63,6 @@ let bootTl: gsap.core.Timeline | null = null;
 let team: Team['team'] = [];
 let github: GitHubData | null = null;
 let winner: Winner | null = null;
-let charts: Chart[] = [];
 let hudTl: gsap.core.Timeline | null = null;
 
 // ---------- Render-loop ----------
@@ -271,11 +255,15 @@ function startVideo() {
   glitch(380);
   gsap.to(layer, { opacity: 1, duration: 0.45, onComplete: () => { room.paused = true; } });
   state = 'video';
+  figIdx = -1;
+  slides = github ? buildSlides(github) : [];
+  trackFigures();
 }
 
 function startLoop() {
   if (state !== 'video') return;
   state = 'loop';
+  hideFigure();
   const v1 = $<HTMLVideoElement>('v1');
   const v2 = $<HTMLVideoElement>('v2');
   v2.currentTime = 0;
@@ -290,158 +278,134 @@ function hex(i: number) {
 
 const nf = (n: number) => Math.round(n).toLocaleString('sv-SE');
 
-function styleCharts() {
-  const px = Math.max(13, Math.round(window.innerWidth * 0.0105));
-  Chart.defaults.font.family = 'VT323, monospace';
-  Chart.defaults.font.size = px;
-  Chart.defaults.color = '#8fe3ec';
-  Chart.defaults.animation = { duration: 1700, easing: 'easeOutQuart' };
-  Chart.defaults.events = []; // HUD:n är inte interaktiv
+// ---------- Nyckeltal ovanpå filmen ----------
+// Arton stora rubriker, jämnt fördelade över filmens längd. Format: "coded in javascript / 6 / repositories".
+// Antalet rubriker anpassar sig efter vilken data som finns. En av dem är ett internt skämt utan datatäckning.
+interface Slide {
+  kicker?: string; // t.ex. "coded in typescript"
+  value: number;
+  label: string;
+}
+let slides: Slide[] = [];
+const STACK_SKIP = new Set(['node.js', 'typescript', 'docker', 'html/css/js']); // för generiskt eller dubblett av språk
+const STACK_PRIORITY = ['claude api', 'openai api', 'rust', 'go', 'python', 'postgres', 'next.js', 'gsap', 'vitest', 'chart.js']; // roligare först vid lika antal
+// "built with" som standard, men vissa tekniker har ett eget verb
+const VERB: Record<string, string> = {
+  'claude api': 'powered by', 'openai api': 'powered by', 'gemini api': 'powered by',
+  'github actions': 'automated with', docker: 'containerised with',
+  vitest: 'tested with', jest: 'tested with', playwright: 'tested with',
+  postgres: 'stored in', mongodb: 'stored in', firebase: 'stored in', supabase: 'stored in',
+  gsap: 'animated with', 'framer motion': 'animated with', 'three.js': 'rendered with', 'chart.js': 'charted with', d3: 'charted with',
+  rust: 'written in', go: 'written in', python: 'written in', php: 'written in', ruby: 'written in',
+};
+const plural = (n: number) => (n === 1 ? 'repository' : 'repositories');
+// Internt skämt: ingen data finns bakom, och det ska stå precis så här (i gemener enligt sajtens regel).
+const JOKE: Slide = { kicker: 'coded in confetti', value: 1, label: 'repository' };
+
+function buildSlides(g: GitHubData): Slide[] {
+  const t = g.totals;
+  const s: Slide[] = [
+    { value: t.repos, label: 'repon' },
+    { value: t.commits, label: 'commits' },
+    { value: t.pull_requests, label: 'pull requests' },
+    { value: t.contributors, label: 'bidragsgivare' },
+    { value: t.additions, label: 'rader kod' },
+    { value: t.files, label: 'filer i repona' },
+  ];
+  if (g.peakHour && g.peakHour.commits > 0) s.push({ value: g.peakHour.commits, label: `commits på en timme (kl ${g.peakHour.label})` });
+  s.push({ value: t.npm_packages, label: 'unika npm-paket' });
+
+  // Kodspråk: det vanligaste (antal repon), därefter typescript om det finns, annars näst vanligaste
+  const langs = (g.languages ?? [])
+    .filter((l) => l.name !== 'annat' && l.repos > 0)
+    .sort((a, b) => b.repos - a.repos || b.bytes - a.bytes);
+  const first = langs[0];
+  const second = langs.find((l) => l !== first && l.name.toLowerCase() === 'typescript') ?? langs[1];
+  const langSlide = (l: GitHubData['languages'][number]): Slide => ({ kicker: `coded in ${l.name.toLowerCase()}`, value: l.repos, label: plural(l.repos) });
+  if (first) s.push(langSlide(first));
+  s.push(JOKE); // direkt efter första riktiga "coded in", ungefär mitt i
+  if (second) s.push(langSlide(second));
+
+  // Teknikstackar: flest repon först, sedan de roligare
+  const rank = (n: string) => (STACK_PRIORITY.includes(n) ? STACK_PRIORITY.indexOf(n) : 99);
+  const stacks = (g.stacks ?? [])
+    .filter((x) => !STACK_SKIP.has(x.name))
+    .sort((a, b) => b.repos - a.repos || rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))
+    .slice(0, 6);
+  for (const x of stacks) s.push({ kicker: `${VERB[x.name] ?? 'built with'} ${x.name}`, value: x.repos, label: plural(x.repos) });
+
+  if (t.ai_commits > 0) s.push({ kicker: 'co-authored by ai', value: t.ai_commits, label: 'commits' });
+  return s.filter((x) => x.value > 0);
 }
 
-const GRID = 'rgba(47, 212, 224, 0.1)';
-const PALETTE = ['#2fd4e0', '#ff3d7f', '#6bff97', '#ffb15c', '#3d7bff', '#b58cff', '#8a8f98'];
+let figIdx = -1;
+let figRaf = 0;
 
-function chartBox(parent: HTMLElement, title: string, cls = '') {
-  const box = document.createElement('div');
-  box.className = 'chart-box ' + cls;
-  box.innerHTML = `<div class="chart-title">${title}</div><div class="cv"><canvas></canvas></div>`;
-  parent.appendChild(box);
-  return box.querySelector('canvas') as HTMLCanvasElement;
+function trackFigures() {
+  cancelAnimationFrame(figRaf);
+  const v1 = $<HTMLVideoElement>('v1');
+  const tick = () => {
+    if (state !== 'video') return;
+    const d = v1.duration;
+    if (slides.length && d > 0 && isFinite(d)) {
+      const i = Math.min(slides.length - 1, Math.floor((v1.currentTime / d) * slides.length));
+      if (i !== figIdx) showFigure(i, d / slides.length);
+    }
+    figRaf = requestAnimationFrame(tick);
+  };
+  figRaf = requestAnimationFrame(tick);
 }
 
-function buildCharts(host: HTMLElement, g: GitHubData) {
-  styleCharts();
-  const tl = g.timeline;
-  const maxHour = Math.max(1, ...tl.map((t) => t.commits));
-  charts.push(
-    new Chart(chartBox(host, 'commits över tid', 'wide'), {
-      data: {
-        labels: tl.map((t) => t.label),
-        datasets: [
-          { type: 'bar', data: tl.map((t) => t.commits), backgroundColor: 'rgba(255, 61, 127, 0.7)', borderWidth: 0, barPercentage: 0.12, categoryPercentage: 1, yAxisID: 'y1' },
-          {
-            type: 'line',
-            data: tl.map((t) => t.cumulative),
-            borderColor: '#2fd4e0',
-            backgroundColor: 'rgba(47, 212, 224, 0.16)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 0,
-            borderWidth: 1,
-            yAxisID: 'y',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: GRID, lineWidth: 0.5 }, border: { color: GRID } },
-          y: { beginAtZero: true, grid: { color: GRID, lineWidth: 0.5 }, border: { display: false } },
-          y1: { display: false, beginAtZero: true, max: maxHour * 3.2 },
-        },
-      },
-    }),
-  );
-
-  const top = g.repos.filter((r) => r.commits > 0).slice(0, 8);
-  charts.push(
-    new Chart(chartBox(host, 'commits per repo'), {
-      type: 'bar',
-      data: {
-        labels: top.map((r) => `${r.name.toLowerCase()} · ${r.commits}`),
-        datasets: [{ data: top.map((r) => r.commits), backgroundColor: top.map((_, i) => (i === 0 ? '#ff3d7f' : '#2fd4e0')), borderWidth: 0, barThickness: 3 }],
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { beginAtZero: true, grid: { color: GRID, lineWidth: 0.5 }, border: { display: false } },
-          y: { grid: { display: false }, border: { color: GRID }, ticks: { autoSkip: false } },
-        },
-      },
-    }),
-  );
-
-  charts.push(
-    new Chart(chartBox(host, 'språk'), {
-      type: 'doughnut',
-      data: {
-        labels: g.languages.map((l) => `${l.name.toLowerCase()} ${Math.round(l.share * 100)}%`),
-        datasets: [{ data: g.languages.map((l) => l.share), backgroundColor: PALETTE, borderColor: '#0a0807', borderWidth: 3 }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '88%',
-        plugins: { legend: { position: 'right', labels: { boxWidth: 10, boxHeight: 10, padding: 8 } } },
-      },
-    }),
-  );
+function showFigure(i: number, segSec: number) {
+  figIdx = i;
+  const el = $('figure');
+  const sl = slides[i];
+  const num = el.querySelector('.fn') as HTMLElement;
+  (el.querySelector('.fk') as HTMLElement).textContent = sl.kicker ?? '';
+  (el.querySelector('.fl') as HTMLElement).textContent = sl.label;
+  num.textContent = '0';
+  gsap.killTweensOf(el);
+  el.classList.remove('hidden');
+  gsap.fromTo(el, { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out' });
+  const o = { v: 0 };
+  gsap.to(o, { v: sl.value, duration: Math.min(1.6, segSec * 0.45), ease: 'power2.out', onUpdate: () => { num.textContent = nf(o.v); } });
+  gsap.to(el, { opacity: 0, duration: 0.4, delay: Math.max(0.8, segSec - 0.8) });
 }
+
+function hideFigure() {
+  cancelAnimationFrame(figRaf);
+  figIdx = -1;
+  const el = $('figure');
+  gsap.killTweensOf(el);
+  gsap.to(el, { opacity: 0, duration: 0.3, onComplete: () => el.classList.add('hidden') });
+}
+
+// ---------- Efter filmen: personerna (statistiken har redan visats i filmen) ----------
+const GALLERY_SECONDS = 8; // så länge galleriet visas innan frågan "continue?" tar över hela skärmen
 
 function buildHud() {
   const hud = $('hud');
-  charts.forEach((c) => c.destroy());
-  charts = [];
   hud.innerHTML = '';
   hudTl?.kill();
-
-  const labels: [string, string][] = [
-    ['repos', 'repon'],
-    ['commits', 'commits'],
-    ['pull_requests', 'pull requests'],
-    ['contributors', 'bidragsgivare'],
-    ['additions', 'rader tillagda'],
-  ];
-  const g = github;
-
-  const top = document.createElement('div');
-  top.className = 'hud-top';
-  hud.appendChild(top);
-
-  const counters: { el: HTMLElement; v: number }[] = [];
-  const totals = document.createElement('div');
-  totals.className = 'hud-totals';
-  if (g) {
-    for (const [k, label] of labels) {
-      const d = document.createElement('div');
-      d.className = 'stat';
-      d.innerHTML = `<div class="n">0</div><div class="l">${label}</div>`;
-      totals.appendChild(d);
-      counters.push({ el: d.querySelector('.n') as HTMLElement, v: g.totals[k] ?? 0 });
-    }
-  }
-  hud.appendChild(totals);
-
-  const chartsHost = document.createElement('div');
-  chartsHost.className = 'charts';
-  hud.appendChild(chartsHost);
-  if (g) buildCharts(chartsHost, g);
 
   const finalTitle = document.createElement('div');
   finalTitle.className = 'hud-final';
   hud.appendChild(finalTitle);
 
-  // Foto-ring: små längst ner, jättestora på slutet
+  // Foto-ring: korten är stora redan från start (renderas i slutstorlek, skarpa)
   const wrap = document.createElement('div');
   wrap.className = 'ring-wrap';
   const ring = document.createElement('div');
   ring.className = 'ring';
   wrap.appendChild(ring);
   const n = Math.max(team.length, 1);
-  // Korten renderas i slutstorlek (skarpa) och skalas ned i början, så de är crisp när de är jättestora
   const cardW = Math.min(window.innerWidth * 0.09, 170);
   const bigW = Math.min(window.innerHeight * 0.58, 700);
   const s0 = cardW / bigW;
   const R = Math.max(260, (n * bigW * 1.12) / (2 * Math.PI));
   wrap.style.setProperty('--cw', `${bigW}px`);
   wrap.style.perspective = `${1400 / s0}px`;
-  gsap.set(wrap, { scale: s0 });
+  wrap.style.top = '47vh';
   team.forEach((m, i) => {
     const c = document.createElement('div');
     c.className = 'card';
@@ -456,35 +420,20 @@ function buildHud() {
   gsap.set(ring, { transformOrigin: `0px 0px ${-R}px` });
   hud.appendChild(wrap);
 
-  const tl = gsap.timeline({ delay: 0.6 });
+  const tl = gsap.timeline({ delay: 0.3 });
   hudTl = tl;
-  tl.add(typeInto(top, `> org: ${(g?.org ?? 'hackathon').toLowerCase()} // scan complete`, 34));
-  tl.from('.stat', { opacity: 0, x: -30, stagger: 0.22, duration: 0.5 }, '>0.1');
-  counters.forEach((c, i) => {
-    const o = { v: 0 };
-    tl.to(o, { v: c.v, duration: 1.4, ease: 'power2.out', onUpdate: () => { c.el.textContent = nf(o.v); } }, 1.2 + i * 0.22);
-  });
-  tl.from('.chart-box', { opacity: 0, y: 24, stagger: 0.25, duration: 0.6 }, 1.2);
-  tl.from('.card', { opacity: 0, scale: 0.6, stagger: 0.05, duration: 0.5 }, 2.4);
-  const spin = gsap.to(ring, { rotationY: '+=360', duration: 17.5, ease: 'none', repeat: -1 });
-
-  // Slutet: statistik tonas ut, personerna blir riktigt stora
-  const finalAt = 9.5;
-  tl.to('.charts, .hud-totals, .hud-top', { opacity: 0, y: -24, duration: 0.9, ease: 'power2.in' }, finalAt);
-  tl.to(wrap, { top: '47vh', scale: 1, duration: 2.6, ease: 'power3.inOut' }, finalAt + 0.2);
-  tl.to(spin, { timeScale: 0.7, duration: 2 }, finalAt + 0.2);
-  tl.add(typeInto(finalTitle, `> ${team.length} personer. ett vinnande projekt.`, 28), finalAt + 1.4);
-  tl.call(showContinue, [], finalAt + 3.2);
+  tl.from('.card', { opacity: 0, scale: 0.7, stagger: 0.04, duration: 0.6 }, 0);
+  gsap.to(ring, { rotationY: '+=360', duration: 10, ease: 'none', repeat: -1 }); // 2,5x snabbare än förut (25 s/varv)
+  tl.add(typeInto(finalTitle, `> ${team.length} personer. ett vinnande projekt.`, 28), 0.6);
+  tl.call(showContinue, [], GALLERY_SECONDS);
 }
 
-// ---------- Slutet av scen 2: "continue? [y] [n]" ----------
-// Pilarna (eller y/n) väljer, enter bekräftar. y -> scen 3, n -> tillbaka till scen 1.
+// ---------- "continue? [y] [n]" över hela skärmen, som boot-skärmen i scen 1 ----------
+// Pilarna (eller y/n) väljer, enter bekräftar. y -> scen 3, n -> tillbaka till scen 1 (rummet).
 let choice: 'y' | 'n' = 'n';
 
 function renderChoice() {
-  const el = document.getElementById('choice');
-  if (!el) return;
-  el.innerHTML =
+  $('continueMain').innerHTML =
     `<span>&gt; continue?</span>` +
     `<span class="opt${choice === 'y' ? ' sel' : ''}" data-c="y">[ y ]</span>` +
     `<span class="opt${choice === 'n' ? ' sel' : ''}" data-c="n">[ n ]</span><i class="cursor"></i>`;
@@ -494,15 +443,9 @@ function showContinue() {
   if (state !== 'loop') return;
   state = 'choose';
   choice = 'n';
-  const el = document.createElement('div');
-  el.id = 'choice';
-  $('hud').appendChild(el);
   renderChoice();
-  gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 });
-  el.addEventListener('click', (e) => {
-    const c = (e.target as HTMLElement).dataset.c as 'y' | 'n' | undefined;
-    if (c) setChoice(c);
-  });
+  blip(440, 0.06);
+  show($('continue'), 0.5);
 }
 
 function setChoice(c: 'y' | 'n') {
@@ -511,6 +454,12 @@ function setChoice(c: 'y' | 'n') {
   blip(c === 'y' ? 760 : 520, 0.04);
   renderChoice();
 }
+
+$('continueMain').addEventListener('click', (e) => {
+  if (state !== 'choose') return;
+  const c = (e.target as HTMLElement).dataset.c;
+  if (c === 'y' || c === 'n') setChoice(c);
+});
 
 window.addEventListener('keydown', (e) => {
   if (state !== 'choose') return;
@@ -537,12 +486,11 @@ function backToRoom() {
   gsap.delayedCall(0.3, () => {
     hudTl?.kill();
     gsap.killTweensOf('.ring');
-    charts.forEach((c) => c.destroy());
-    charts = [];
     $<HTMLVideoElement>('v1').pause();
     $<HTMLVideoElement>('v2').pause();
     gsap.set($('v2'), { opacity: 0 });
     $('videoLayer').classList.add('hidden');
+    $('continue').classList.add('hidden');
     $('hud').innerHTML = '';
     room.promptText = '';
     room.promptSubmitted = false;
@@ -565,11 +513,10 @@ function goReveal() {
   gsap.delayedCall(0.3, () => {
     hudTl?.kill();
     gsap.killTweensOf('.ring');
-    charts.forEach((c) => c.destroy());
-    charts = [];
     $<HTMLVideoElement>('v1').pause();
     $<HTMLVideoElement>('v2').pause();
     $('videoLayer').classList.add('hidden');
+    $('continue').classList.add('hidden');
     $('hud').innerHTML = '';
     // Kameran står kvar inzoomad på skärmen medan namnet avkodas
     gsap.set(room, { zoom: 1, power: 1 });

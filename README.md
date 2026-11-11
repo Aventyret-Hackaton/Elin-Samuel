@@ -10,8 +10,8 @@ npm run dev      # http://localhost:5173
 npm run build    # typecheck + produktionsbygge i dist/
 ```
 Flöde: klick/ENTER på boot-skärmen (modemljud, klicka igen för att hoppa över) → rummet, ingen text i bild →
-klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen → statistik och personer →
-`continue? [y] [n]` (pilar/y/n väljer, ENTER bekräftar): y → matrix-regn på datorskärmen, vinnarens reponamn avkodas och står stort i grönt, sedan åker kameran ut till rummet. n → tillbaka till rummet.
+klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen (med nyckeltal från GitHub-organisationen stort ovanpå) → personerna →
+`continue? [y] [n]` över hela skärmen (pilar/y/n väljer, ENTER bekräftar): y → matrix-regn på datorskärmen, vinnarens reponamn avkodas och står stort i grönt, sedan åker kameran ut till rummet. n → tillbaka till rummet.
 
 Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=reveal` (matrix-regnet på skärmen), `?skip=winner` (slutbilden).
 Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i scen 1.
@@ -27,6 +27,12 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 | Fotorummet (bild + djup, scen 1 och 3) | `public/room/room.jpg`, `room-depth.png`, `plate.json`, se `docs/room/PROMPTS.md` |
 | Etiketter och sökvägar | `src/config.ts` |
 
+## Film
+`npm run film` renderar filmen (55 s) av fem scenklipp i `film/clips/scene-1..5.mp4` (12 s vardera = 11 s scen + 1 s övergångsöverlapp, 1920×1080, 24 fps) + syntetiserad musik
++ trippiga övergångar + profilbilder som blixtrar förbi. Saknas klippen skapas platshållare. `node film/render.mjs --install`
+kopierar resultatet till `public/media/video.mp4`. Nyckeltalen läggs ovanpå filmen av sajten, inte i filen.
+Genererade filer (`film/out/`, `film/clips/`) är gitignorerade. Filmen kodas liten (crf 30, max 3 Mbit/s, ~10 MB för 55 s) eftersom repot är publikt och filmen versioneras i git: ändra den sällan, varje ny version ligger kvar i historiken.
+
 ## Fotorummet (2.5D)
 Standard är fotorummet (`room: 'plate'` i `src/config.ts`). Kodrummet finns kvar: `?room=code`.
 - **Fotorummet** (`src/room-plate.ts` + `src/plate-shader.ts`): `public/room/room.jpg` + djupkarta, beskrivet i `public/room/plate.json`.
@@ -39,11 +45,11 @@ Byt bild: se `docs/room/PROMPTS.md`. Utvecklarlägen (bara `npm run dev`, sparar
 - `?calibrate=screen` / `blinds` / `pane`: klicka på fyra hörn i bilden, `plate.json` uppdateras.
 - `?export=plate` renderar kodrummet som bilder (`export-*`, gitignorerade). Visa dem med `?room=plate&plate=export` (två-vy-läget).
 
-## Data och diagram
+## Data
 `npm run github` (körs även före `npm run build`) hämtar commits, PR:er, rader, språk och tidslinje per timme för alla repon i
 `Aventyret-Hackaton` via GitHub-API:t och skriver `public/data/github.json`. Token tas från `GITHUB_TOKEN` eller inloggad `gh`
 och sparas aldrig. Utan token gäller 60 anrop/timme. Misslyckas hämtningen behålls befintlig fil.
-Exkludera repon: `GITHUB_EXCLUDE=Elin-Samuel,repo-config-test npm run github`. Diagrammen ritas med Chart.js i `src/main.ts` (`buildCharts`).
+Exkludera repon: `GITHUB_EXCLUDE=Elin-Samuel,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, bidragsgivare, rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
 Kör `npm run github` precis före lansering så siffrorna är färska.
 
 ## Typsnitt
