@@ -15,6 +15,9 @@ import {
   Legend,
 } from 'chart.js';
 import { Room } from './room';
+import { PlateRoom } from './room-plate';
+import type { PlateJson, RoomLike } from './room-types';
+import { savePlateFile, startCalibrate, isCalibrateTarget } from './plate-tools';
 import { CONFIG, BASE } from './config';
 import { ensureAudio, playModem, playHum, blip, whoosh, keyClick, rattle } from './audio';
 
@@ -39,7 +42,33 @@ interface Winner {
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
 
-const room = new Room($<HTMLCanvasElement>('gl'));
+/** Kodrummet eller fotorummet (CONFIG.room, eller ?room=plate|code). Faller tillbaka på kodrummet utan plate.json. */
+// ?plate=export visar kodrummets exporterade bilder (två-vy-läget) i stället för plate.json
+const platePath = params.get('plate') === 'export' ? 'room/plate-export.json' : CONFIG.plate;
+
+async function createRoom(canvas: HTMLCanvasElement): Promise<RoomLike> {
+  const mode = params.get('room') ?? CONFIG.room;
+  if (mode === 'plate' && !params.has('export')) {
+    const plate = await loadJson<PlateJson>(platePath);
+    if (plate?.desk?.screen) {
+      const r = new PlateRoom(canvas, plate);
+      r.load().catch((e) => console.error('[room] fotorummets bilder kunde inte laddas', e));
+      return r;
+    }
+    console.warn('[room] plate.json saknas, använder kodrummet');
+  }
+  return new Room(canvas);
+}
+
+const room = await createRoom($<HTMLCanvasElement>('gl'));
+
+// Utvecklarlägen för fotorummet: ?export=plate (rendera kodrummet som bilder), ?calibrate=screen|blinds|pane|sign|window
+if (params.get('export') === 'plate' && room instanceof Room) {
+  $('gate').classList.add('hidden');
+  void document.fonts.ready.then(() => room.exportPlates(savePlateFile)).then((p) => console.log('[plate] export klar', p));
+}
+const calibrate = params.get('calibrate');
+if (isCalibrateTarget(calibrate)) void startCalibrate(calibrate, platePath);
 let state: State = 'gate';
 let now = 0;
 let stopHum: (() => void) | null = null;

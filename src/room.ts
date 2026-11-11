@@ -10,7 +10,9 @@ import {
   BlendFunction,
 } from 'postprocessing';
 
-export type ScreenState = 'off' | 'idle' | 'winner';
+import { drawScreenCanvas, drawSignCanvas, type ScreenState } from './canvases';
+
+export type { ScreenState };
 
 const HFOV = 62; // fast horisontell FOV: kompositionen håller sig i alla fönsterformat
 const SCREEN_W = 0.48;
@@ -283,52 +285,9 @@ export class Room {
     this.scene.add(this.blindsMesh);
   }
 
-  /** Ritar fönstrets glöd. Utan namn: neonglöd. Med namn: mörk natt med en neonskylt. */
+  /** Ritar fönstrets glöd (se drawSignCanvas i canvases.ts). */
   private drawSign(name: string | null) {
-    const g = this.signCanvas.getContext('2d')!;
-    const w = 1024;
-    const h = 704;
-    if (!name) {
-      const gr = g.createLinearGradient(0, 0, 0, h);
-      gr.addColorStop(0, '#3d7bff');
-      gr.addColorStop(0.5, '#ff3d7f');
-      gr.addColorStop(1, '#2fd4e0');
-      g.fillStyle = gr;
-      g.fillRect(0, 0, w, h);
-    } else {
-      g.fillStyle = '#080510';
-      g.fillRect(0, 0, w, h);
-      const hz = g.createRadialGradient(w / 2, h / 2, 30, w / 2, h / 2, w * 0.62);
-      hz.addColorStop(0, 'rgba(255,61,127,0.22)');
-      hz.addColorStop(1, 'rgba(8,5,16,0)');
-      g.fillStyle = hz;
-      g.fillRect(0, 0, w, h);
-      let size = 300;
-      const font = (px: number) => `${px}px "Replica LL", "Helvetica Neue", Arial, sans-serif`;
-      g.font = font(size);
-      while (g.measureText(name).width > w * 0.84 && size > 60) {
-        size -= 8;
-        g.font = font(size);
-      }
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      g.lineJoin = 'round';
-      const y = h / 2 + size * 0.04;
-      // neonrör: brett sken, rosa rör, vit het kärna
-      g.shadowColor = '#ff3d7f';
-      g.shadowBlur = 70;
-      g.lineWidth = 16;
-      g.strokeStyle = '#ff3d7f';
-      g.strokeText(name, w / 2, y);
-      g.shadowBlur = 26;
-      g.lineWidth = 9;
-      g.strokeStyle = '#ff7aa8';
-      g.strokeText(name, w / 2, y);
-      g.shadowBlur = 0;
-      g.lineWidth = 3.5;
-      g.strokeStyle = '#fff1f6';
-      g.strokeText(name, w / 2, y);
-    }
+    drawSignCanvas(this.signCanvas.getContext('2d')!, name);
     this.windowTex.needsUpdate = true;
   }
 
@@ -390,51 +349,11 @@ export class Room {
 
   // ---------- Skärminnehåll ----------
   private drawScreen(t: number) {
-    const g = this.screenCtx;
-    g.setTransform(1.5, 0, 0, 1.5, 0, 0);
-    const w = 1280;
-    const h = 720;
-    const winner = this.screenState === 'winner';
-    const main = winner ? '#ff7aa8' : '#6bff97';
-    g.fillStyle = winner ? '#1a0610' : '#04140a';
-    g.fillRect(0, 0, w, h);
-    if (this.screenState !== 'off') {
-      g.shadowColor = main;
-      g.shadowBlur = 14;
-      g.fillStyle = main;
-      g.textBaseline = 'top';
-      if (winner) {
-        g.font = '200px "DotGothic16", monospace';
-        g.fillText('優勝', 70, 80);
-        g.font = '64px VT323, monospace';
-        g.fillText('> project selected_', 80, 400);
-        g.fillText('> ' + (Math.floor(t * 2) % 2 ? 'access granted' : 'access granted_'), 80, 480);
-      } else {
-        g.font = '66px VT323, monospace';
-        const lines = ['> hackathon os 26.11', '> scanning repos ........ ok', '> contributors ......... ok', '> judging .............. ready'];
-        const since = t - this.screenStart;
-        const visible = Math.min(lines.length, Math.floor(since * 2.2));
-        lines.slice(0, visible).forEach((l, i) => g.fillText(l, 50, 40 + i * 76));
-        if (since > 1.9) {
-          // Prompten: användarens text syns här (max 36 tecken per rad)
-          const cursor = this.promptSubmitted ? '' : Math.floor(t * 2) % 2 ? '_' : ' ';
-          const text = '> ' + this.promptText + cursor;
-          const chunks: string[] = [];
-          for (let k = 0; k < text.length; k += 36) chunks.push(text.slice(k, k + 36));
-          chunks.forEach((c, i) => g.fillText(c, 50, 400 + i * 76));
-          if (this.promptSubmitted) g.fillText('> executing ...', 50, 400 + chunks.length * 76);
-        }
-      }
-      g.shadowBlur = 0;
-    }
-    // Scanlines + vinjett på skärmytan
-    g.fillStyle = 'rgba(0,0,0,0.32)';
-    for (let y = 0; y < h; y += 4) g.fillRect(0, y, w, 1.6);
-    const vg = g.createRadialGradient(w / 2, h / 2, h * 0.3, w / 2, h / 2, h * 0.85);
-    vg.addColorStop(0, 'rgba(0,0,0,0)');
-    vg.addColorStop(1, 'rgba(0,0,0,0.65)');
-    g.fillStyle = vg;
-    g.fillRect(0, 0, w, h);
+    drawScreenCanvas(
+      this.screenCtx,
+      { state: this.screenState, start: this.screenStart, promptText: this.promptText, promptSubmitted: this.promptSubmitted },
+      t,
+    );
     this.screenTex.needsUpdate = true;
   }
 
@@ -579,5 +498,112 @@ export class Room {
     }
 
     this.composer.render(dt);
+  }
+
+  // ---------- Export av fotoplattor (?export=plate) ----------
+  /**
+   * Renderar rummet från de två vilovyerna (datorn och fönstret) i 16:9 med något vidare FOV än sajten,
+   * plus en djupkarta, och sparar export-*-bilder + plate-export.json via `save` (skriver aldrig över plate.json). Bilderna är också
+   * kompositionsguider för AI-genererade ersättare (docs/room/PROMPTS.md).
+   */
+  async exportPlates(save: (name: string, data: Blob | string) => Promise<void>) {
+    const W = 4096;
+    const H = 2304; // 16:9
+    const EXPORT_HFOV = 76; // vidare än sajtens 62°: marginal för musblick, höga fönster och svepet
+    const NEAR = 0.4;
+    const FAR = 5.0;
+    const prevSize = this.renderer.getSize(new THREE.Vector2());
+    const prevRatio = this.renderer.getPixelRatio();
+
+    // Stilla, upplyst läge utan bil, damm eller mus
+    this.carNext = Infinity;
+    this.carT = -1;
+    this.mouseGain = 0;
+    this.power = 1;
+    this.lit = 1;
+    this.winner = 0;
+    this.zoom = 0;
+    this.blinds = 0;
+    this.signPower = 0;
+    this.setScreenState('off', 0);
+    this.update(0.016, 0);
+    this.carLight.intensity = 0;
+    this.dust.visible = false;
+
+    const aspect = W / H;
+    const vfov = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(EXPORT_HFOV) / 2) / aspect));
+    const cam = new THREE.PerspectiveCamera(vfov, aspect, 0.05, 40);
+    this.renderer.setPixelRatio(1);
+    this.renderer.setSize(W, H, false);
+
+    const depthMat = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
+      uniforms: { uNear: { value: NEAR }, uFar: { value: FAR } },
+      vertexShader: 'varying float vZ; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vZ = -mv.z; gl_Position = projectionMatrix * mv; }',
+      fragmentShader: 'uniform float uNear; uniform float uFar; varying float vZ; void main(){ float d = clamp(1.0 - (vZ - uNear) / (uFar - uNear), 0.0, 1.0); gl_FragColor = vec4(vec3(d), 1.0); }',
+    });
+    const toBlob = (type: string, q?: number) => fetch(this.renderer.domElement.toDataURL(type, q)).then((r) => r.blob());
+    const project = (pts: THREE.Vector3[]) =>
+      pts.map((v) => {
+        const n = v.clone().project(cam);
+        return [+((n.x + 1) / 2).toFixed(4), +((1 - n.y) / 2).toFixed(4)] as [number, number];
+      });
+    const depthAt = (v: THREE.Vector3) => +THREE.MathUtils.clamp(1 - (cam.position.distanceTo(v) - NEAR) / (FAR - NEAR), 0, 1).toFixed(3);
+    const restWidth = +(Math.tan(THREE.MathUtils.degToRad(HFOV) / 2) / Math.tan(THREE.MathUtils.degToRad(EXPORT_HFOV) / 2)).toFixed(4);
+
+    const shoot = async (key: string, pos: THREE.Vector3, tgt: THREE.Vector3) => {
+      cam.position.copy(pos);
+      cam.lookAt(tgt);
+      cam.updateMatrixWorld();
+      this.renderer.render(this.scene, cam);
+      const img = await toBlob('image/jpeg', 0.9);
+      const fog = this.scene.fog;
+      const bg = this.scene.background;
+      this.scene.fog = null;
+      this.scene.background = new THREE.Color(0x000000);
+      this.scene.overrideMaterial = depthMat;
+      this.renderer.render(this.scene, cam);
+      const depth = await toBlob('image/png');
+      this.scene.overrideMaterial = null;
+      this.scene.fog = fog;
+      this.scene.background = bg;
+      await save(`export-${key}.jpg`, img);
+      await save(`export-${key}-depth.png`, depth);
+    };
+
+    // Datorvyn: skärmen släckt och tom (ersätts av den levande skärmen)
+    await shoot('desk', this.restPosIdle, this.restTargetIdle);
+    const hw = SCREEN_W / 2;
+    const hh = SCREEN_H / 2;
+    const screen = project(
+      [[-hw, hh], [hw, hh], [hw, -hh], [-hw, -hh]].map(([x, y]) => this.screenGroup.localToWorld(new THREE.Vector3(x, y, 0))),
+    );
+    const screenFocus = depthAt(this.screenCenter);
+
+    // Fönstervyn: tomt mörkt fönster utan persienn (persiennen och skylten ritas av fotorummet)
+    this.blindsMesh.visible = false;
+    this.drawSign('');
+    await shoot('window', this.restPosWin, this.restTargetWin);
+    const wc = new THREE.Vector3(-1.0, 1.65, -2.27);
+    const win = project([[-0.8, 0.55], [0.8, 0.55], [0.8, -0.55], [-0.8, -0.55]].map(([x, y]) => wc.clone().add(new THREE.Vector3(x, y, 0))));
+    const winFocus = depthAt(wc);
+
+    const plate = {
+      _note: 'Genererad av ?export=plate (kodrummet, två vyer). Visas med ?room=plate&plate=export.',
+      desk: { image: 'room/export-desk.jpg', depth: 'room/export-desk-depth.png', rest: { center: [0.5, 0.5], width: restWidth }, focus: screenFocus, screen },
+      window: { image: 'room/export-window.jpg', depth: 'room/export-window-depth.png', rest: { center: [0.5, 0.5], width: restWidth }, focus: winFocus, window: win },
+    };
+    await save('plate-export.json', JSON.stringify(plate, null, 2) + '\n');
+
+    // Återställ
+    this.blindsMesh.visible = true;
+    this.drawSign(null);
+    this.dust.visible = true;
+    this.mouseGain = 1;
+    this.carNext = 5;
+    this.renderer.setPixelRatio(prevRatio);
+    this.renderer.setSize(prevSize.x, prevSize.y, false);
+    this.resize();
+    return plate;
   }
 }

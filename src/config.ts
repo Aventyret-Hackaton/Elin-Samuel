@@ -11,6 +11,11 @@ export const CONFIG = {
     github: 'data/github.json', // hämtas av scripts/fetch-github.mjs
     winner: 'data/winner.json',
   },
+  // Rummet i scen 1 och 3. 'code' = 3D-rummet byggt i kod (room.ts).
+  // 'plate' = fotorummet (room-plate.ts): stillbilder + djup i public/room/, beskrivet i plate.json.
+  // Saknas plate.json används kodrummet. Testa utan att ändra här: ?room=plate eller ?room=code.
+  room: 'plate' as 'code' | 'plate',
+  plate: 'room/plate.json',
 } as const;
 
 export const BASE = import.meta.env.BASE_URL;

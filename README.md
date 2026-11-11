@@ -24,7 +24,20 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 | Teamfoton | `public/team/*`, lista byggs av `npm run team` till `public/data/team.json` |
 | GitHub-statistik (alla repon i orgen) | `public/data/github.json`, hämtas med `npm run github` |
 | Vinnande repo (namnet på neonskylten) | `public/data/winner.json` (`name`) |
+| Fotorummet (bild + djup, scen 1 och 3) | `public/room/room.jpg`, `room-depth.png`, `plate.json`, se `docs/room/PROMPTS.md` |
 | Etiketter och sökvägar | `src/config.ts` |
+
+## Fotorummet (2.5D)
+Standard är fotorummet (`room: 'plate'` i `src/config.ts`). Kodrummet finns kvar: `?room=code`.
+- **Fotorummet** (`src/room-plate.ts` + `src/plate-shader.ts`): `public/room/room.jpg` + djupkarta, beskrivet i `public/room/plate.json`.
+  En bild visar både datorn och fönstret (envy-läge). Musen ger parallax, den levande CRT-skärmen mappas in på glaset,
+  scen 3 åker in mot fönstret där fotots egen persienn dras upp och neonskylten lyser i glaset bakom.
+  Tändning (med skrivbordslampan), flimmer, vinnarton och bilens ljuskägla görs i shadern.
+- **Kodrummet** (`src/room.ts`): 3D byggt i kod. Används också om `plate.json` saknas.
+
+Byt bild: se `docs/room/PROMPTS.md`. Utvecklarlägen (bara `npm run dev`, sparar till `public/room/` via `vite.config.ts`):
+- `?calibrate=screen` / `blinds` / `pane`: klicka på fyra hörn i bilden, `plate.json` uppdateras.
+- `?export=plate` renderar kodrummet som bilder (`export-*`, gitignorerade). Visa dem med `?room=plate&plate=export` (två-vy-läget).
 
 ## Data och diagram
 `npm run github` (körs även före `npm run build`) hämtar commits, PR:er, rader, språk och tidslinje per timme för alla repon i
@@ -44,7 +57,10 @@ Annan källa: sätt `REPLICA_FONT_URL`. Misslyckas hämtningen används lokalt i
 `docs/moodboard/STYLE.md` (moodboard i `docs/moodboard/MOODBOARD.png`).
 
 ## Struktur
-- `src/room.ts` – 3D-rummet, ljus, kamera (musstyrd POV), zoom mot skärmen, efterbehandling
+- `src/room.ts` – kodrummet: 3D, ljus, kamera (musstyrd POV), zoom mot skärmen, efterbehandling, `?export=plate`
+- `src/room-plate.ts`, `src/plate-shader.ts` – fotorummet (2.5D), samma gränssnitt (`src/room-types.ts`)
+- `src/canvases.ts` – CRT-skärmens och neonskyltens 2D-innehåll, delas av båda rummen
+- `src/plate-tools.ts` – export/kalibrering för fotorummet
 - `src/main.ts` – tillståndsmaskin: gate → boot → idle → zoom → video → loop → reveal → winner
 - `src/audio.ts` – modem, CRT-surr, blip/whoosh (WebAudio, allt syntetiserat)
 - `src/config.ts` – texter och sökvägar
