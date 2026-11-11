@@ -286,7 +286,7 @@ export class PlateRoom implements RoomLike {
   }
 
   private buildDust() {
-    const n = 500;
+    const n = 260; // glesare än kodrummet: fotot har redan damm och dis
     const pos = new Float32Array(n * 3);
     const r = rand(3);
     for (let i = 0; i < n; i++) {
@@ -298,7 +298,7 @@ export class PlateRoom implements RoomLike {
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const pts = new THREE.Points(
       geo,
-      new THREE.PointsMaterial({ size: 0.012, color: 0xcfe9ff, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }),
+      new THREE.PointsMaterial({ size: 0.007, color: 0xcfe9ff, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }),
     );
     this.scene.add(pts);
     return pts;
@@ -497,7 +497,7 @@ export class PlateRoom implements RoomLike {
     }
 
     // Damm: rör sig som i kodrummet, kameran följer musen lite
-    (this.dust.material as THREE.PointsMaterial).opacity = 0.55 * this.lit * (1 - this.zoom);
+    (this.dust.material as THREE.PointsMaterial).opacity = 0.22 * this.lit * (1 - this.zoom);
     const p = this.dust.geometry.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < p.count; i++) {
       p.setY(i, p.getY(i) + dt * 0.012 * (1 + (i % 5)));
