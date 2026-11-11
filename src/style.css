@@ -1,7 +1,9 @@
+/* Samma mönster som aventyret.se: självhostad woff2, font-display: swap. Filen hämtas av scripts/fetch-font.mjs. */
 @font-face {
   font-family: 'Replica LL';
   font-weight: 400;
-  src: local('Replica LL'), local('ReplicaLL-Regular'), url('/fonts/ReplicaLL-Regular.otf') format('opentype');
+  font-style: normal;
+  src: url('/fonts/ReplicaLLWeb-Regular.woff2') format('woff2'), local('Replica LL'), local('ReplicaLL-Regular');
   font-display: swap;
 }
 

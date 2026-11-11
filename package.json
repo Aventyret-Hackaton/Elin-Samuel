@@ -8,8 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "team": "node scripts/build-team.mjs",
-    "predev": "node scripts/build-team.mjs",
-    "prebuild": "node scripts/build-team.mjs"
+    "predev": "node scripts/fetch-font.mjs && node scripts/build-team.mjs",
+    "prebuild": "node scripts/fetch-font.mjs && node scripts/build-team.mjs",
+    "font": "node scripts/fetch-font.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

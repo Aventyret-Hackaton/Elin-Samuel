@@ -25,8 +25,11 @@ Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i sc
 | Texter (rubrik, CTA m.m.) | `src/config.ts` |
 
 ## Typsnitt
-Replica LL Regular (enda vikten). Filen `public/fonts/ReplicaLL-Regular.otf` är gitignorerad (kommersiell licens).
-Lägg den där lokalt, eller installera typsnittet på datorn. Webbpublicering kräver webfont-licens.
+Replica LL Regular (enda vikten), självhostad woff2 med samma mönster som aventyret.se (`font-display: swap`, preload).
+`npm run dev`/`build` kör `scripts/fetch-font.mjs`, som hämtar `ReplicaLLWeb-Regular.woff2` från aventyret.se till `public/fonts/`.
+Filen är gitignorerad (licens, publikt repo) och ska hämtas vid bygge/deploy, aldrig committas.
+Aventyret.se skickar ingen CORS-header för fonten, så den går inte att länka direkt från en annan subdomän.
+Annan källa: sätt `REPLICA_FONT_URL`. Misslyckas hämtningen används lokalt installerad Replica LL eller systemtypsnitt.
 
 ## Stil
 `docs/moodboard/STYLE.md` (moodboard i `docs/moodboard/MOODBOARD.png`).
