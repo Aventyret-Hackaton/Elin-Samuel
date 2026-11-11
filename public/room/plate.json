@@ -1,0 +1,15 @@
+{
+  "_note": "Envy-läge: room.jpg visar både datorn och fönstret. Hörn är normaliserade 0–1 (x höger, y ned): övre vänster, övre höger, nedre höger, nedre vänster. Justera med ?calibrate=screen|blinds|pane.",
+  "desk": {
+    "image": "room/room.jpg",
+    "depth": "room/room-depth.png",
+    "rest": { "center": [0.5, 0.5], "width": 0.94 },
+    "focus": 0.52,
+    "exposure": 0.9,
+    "screen": [[0.5465, 0.3961], [0.6785, 0.3898], [0.675, 0.5941], [0.548, 0.5824]],
+    "blinds": [[0.168, 0.0161], [0.331, 0.0717], [0.331, 0.3047], [0.168, 0.2796]],
+    "pane": [[0.169, 0.2849], [0.296, 0.3065], [0.296, 0.5242], [0.169, 0.5287]],
+    "lamp": [0.83, 0.506],
+    "windowView": { "center": [0.26, 0.32], "width": 0.62 }
+  }
+}

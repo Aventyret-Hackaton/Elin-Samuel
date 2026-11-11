@@ -8,3 +8,7 @@ public/fonts/*.woff2
 # Moodboard-referenser (filmstillbilder, rättigheter): endast lokalt
 docs/moodboard/refs/
 docs/moodboard/MOODBOARD.png
+
+# Fotorummets exporterade platshållare (?export=plate), återskapas när som helst
+public/room/export-*
+public/room/plate-export.json
