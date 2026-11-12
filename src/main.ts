@@ -5,7 +5,7 @@ import { PlateRoom } from './room-plate';
 import type { PlateJson, RoomLike } from './room-types';
 import { savePlateFile, startCalibrate, isCalibrateTarget } from './plate-tools';
 import { CONFIG, BASE } from './config';
-import { ensureAudio, playModem, playHum, blip, whoosh, keyClick, carPass, victoryFanfare } from './audio';
+import { ensureAudio, playModem, playHum, blip, whoosh, keyClick, carPass, victoryFanfare, tubeClick, tubeBuzz } from './audio';
 import { REVEAL } from './canvases';
 
 
@@ -547,9 +547,36 @@ function goReveal() {
       ease: 'power2.inOut',
       onComplete: () => {
         state = 'winner';
+        // När kameran stannat: lysröret i taket tänds (klick, blink, surr)
+        tubeOn(0.5);
       },
     });
   });
+}
+
+/**
+ * Lysrör som tänds: tändaren klickar och röret blinkar till ett par gånger, tvekar, och tänder sedan med ett surr
+ * och ett sista ryck. Ljuden ligger i samma tidslinje som ljuset, så de alltid är i synk.
+ */
+let stopTubeBuzz: (() => void) | null = null;
+function tubeOn(delay: number) {
+  gsap.killTweensOf(room, 'tube');
+  stopTubeBuzz?.();
+  stopTubeBuzz = null;
+  room.tube = 0;
+  gsap
+    .timeline({ delay })
+    .call(() => tubeClick(1))
+    .to(room, { tube: 0.9, duration: 0.03 })
+    .to(room, { tube: 0, duration: 0.05 }, '+=0.05')
+    .call(() => tubeClick(0.8), [], '+=0.32')
+    .to(room, { tube: 0.7, duration: 0.03 })
+    .to(room, { tube: 0.05, duration: 0.04 }, '+=0.04')
+    .call(() => tubeClick(1), [], '+=0.18')
+    .call(() => { stopTubeBuzz = tubeBuzz(); })
+    .to(room, { tube: 1, duration: 0.03 })
+    .to(room, { tube: 0.55, duration: 0.04 }, '+=0.12')
+    .to(room, { tube: 1, duration: 0.25, ease: 'power1.out' });
 }
 
 // ---------- Init + utvecklingsgenvägar ----------
@@ -587,6 +614,7 @@ void (async () => {
     } else if (skip === 'winner') {
       // slutbilden: rummet med vinnarnamnet på skärmen
       room.revealOnScreen(winnerName(), now - 30);
+      room.tube = 1;
       state = 'winner';
     } else if (skip === 'reveal') {
       // inzoomat: se regnet och avkodningen från början

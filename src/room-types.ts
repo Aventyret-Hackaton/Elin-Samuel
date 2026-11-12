@@ -12,6 +12,7 @@ export interface RoomLike {
   winner: number; // 0 = scen 1, 1 = scen 3 (mot fönstret)
   blinds: number; // 0 = persiennen nere, 1 = uppdragen
   signPower: number; // neonskyltens ljusstyrka
+  tube: number; // lysröret i taket (scen 3), 0–1
   mouseGain: number;
   paused: boolean;
   promptText: string;

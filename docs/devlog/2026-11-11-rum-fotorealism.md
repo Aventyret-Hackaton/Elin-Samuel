@@ -88,6 +88,18 @@ Verifierat: förstärkt ljus över datorn ger ingen ram, och musen helt ut åt s
   och blev inte bra. Elin valde bort det, och det är helt borttaget.
 - Verifierat: fanfaren spelar utan fel i konsolen och bygget går igenom. **Inte avlyssnad** av en människa.
 
+## Uppdatering 2026-11-12: lysröret i taket tänds i scen 3
+När vinnaren står på skärmen och kameran åker ut tänds ett lysrör i taket. Det syns inte i bilden (taket är bara en mörk kant),
+så det sitter precis ovanför bildkanten, som på film:
+- `uTube` i `plate-shader.ts`: kallt vitt ljus som fyller rummet, starkast högt upp, med lätt upplyfta skuggor (platt lysrörsljus)
+  och ett sken som läcker in vid överkanten. Kodrummet har motsvarande punktljus i taket.
+- `tubeOn()` i `main.ts`: ett par korta blink, en stunds tvekan, sedan fullt ljus med ett sista ryck. Startar 0,5 s efter att utzoomningen är klar.
+  `?skip=winner` visar slutbilden med tänt lysrör.
+- Ljud (`tubeClick`, `tubeBuzz` i `src/audio.ts`): tändarens klick vid varje blink (metalliskt tick, ping, dunk från drosseln),
+  sedan ett lågt surr på 100 Hz (dubbla nätfrekvensen på 50 Hz) med övertoner, fladder och glesa elektriska sprak.
+  Surret börjar med ett kort uppsving när röret tänder. Ljuden ligger i samma GSAP-tidslinje som blinkandet.
+- Verifierat: ljuset i stillbilder vid 0, 35 och 100 %, ljuden spelar utan fel. **Inte sett eller hört i realtid**.
+
 ## Öppna frågor
 - Ljudet i scen 3 (tangentklick + pip) är inte avlyssnat av en människa.
 - **Djupkartan** är grov och handgjord. En riktig (Depth Anything eller liknande) ger bättre parallax.
