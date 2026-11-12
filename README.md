@@ -52,6 +52,14 @@ och sparas aldrig. Utan token gäller 60 anrop/timme. Misslyckas hämtningen beh
 Exkludera repon: `GITHUB_EXCLUDE=vinnarmaskinen,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, vibekådare (bidragsgivare), rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
 Kör `npm run github` precis före lansering så siffrorna är färska.
 
+## Mobil och delning
+- **Mobilvy** (`src/mobile.ts`, `src/mobile.css`): telefoner och surfplattor (touch utan hovring, eller smalare än 760 px) får slutbilden
+  med vinnarnamnet på skärmen, vinnaren i text, en uppmaning att öppna på dator och en länk till vinnarens repo. `src/entry.ts` väljer läge
+  och laddar 3D-upplevelsen bara på dator. Testa med `?device=mobile` eller `?device=desktop`.
+- **Delningsbild** (`public/share/og.jpg`, 1200×630): rummet i första scenen med boot-raderna på skärmen. Avslöjar inte vinnaren.
+  Taggarna står i `index.html`. `og:image` och `og:url` är fullständiga adresser till github.io och måste ändras vid egen domän.
+- Bilderna (`public/share/`) är skärmdumpar ur sajten (`?skip=idle` i 1200×630, `?skip=winner` i 1600×900 beskuren till stående) och kan bytas utan kodändring.
+
 ## Typsnitt
 Replica LL Regular (enda vikten, aldrig versaler: all text visas i gemener), självhostad woff2 med samma mönster som aventyret.se (`font-display: swap`, preload).
 `npm run dev`/`build` kör `scripts/fetch-font.mjs`, som hämtar `ReplicaLLWeb-Regular.woff2` från aventyret.se till `public/fonts/`.
