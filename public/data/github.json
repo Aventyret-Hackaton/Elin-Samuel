@@ -1,19 +1,19 @@
 {
   "org": "Aventyret-Hackaton",
-  "generatedAt": "2026-11-12T08:51:23.160Z",
+  "generatedAt": "2026-11-12T09:42:05.522Z",
   "totals": {
-    "repos": 9,
-    "commits": 220,
-    "pull_requests": 40,
-    "merged_pull_requests": 34,
-    "contributors": 23,
-    "additions": 181292,
-    "deletions": 14735,
+    "repos": 10,
+    "commits": 266,
+    "pull_requests": 54,
+    "merged_pull_requests": 46,
+    "contributors": 24,
+    "additions": 192687,
+    "deletions": 16148,
     "languages": 11,
-    "files": 817,
-    "source_files": 255,
+    "files": 868,
+    "source_files": 278,
     "npm_packages": 32,
-    "ai_commits": 110
+    "ai_commits": 137
   },
   "peakHour": {
     "commits": 42,
@@ -21,7 +21,7 @@
   },
   "topRepo": {
     "name": "ymca",
-    "commits": 54
+    "commits": 58
   },
   "repos": [
     {
@@ -38,13 +38,35 @@
         "typescript",
         "vite"
       ],
-      "commits": 54,
-      "pull_requests": 13,
-      "merged_pull_requests": 12,
+      "commits": 58,
+      "pull_requests": 14,
+      "merged_pull_requests": 13,
       "contributors": 3,
-      "additions": 6744,
-      "deletions": 493,
-      "pushed_at": "2026-11-12T08:42:52Z"
+      "additions": 6939,
+      "deletions": 540,
+      "pushed_at": "2026-11-12T09:37:03Z"
+    },
+    {
+      "name": "party",
+      "language": "JavaScript",
+      "languages": [
+        "JavaScript",
+        "CSS",
+        "HTML",
+        "Python",
+        "Procfile"
+      ],
+      "stack": [
+        "node.js",
+        "postgres"
+      ],
+      "commits": 57,
+      "pull_requests": 2,
+      "merged_pull_requests": 2,
+      "contributors": 3,
+      "additions": 11828,
+      "deletions": 4054,
+      "pushed_at": "2026-11-12T09:33:22Z"
     },
     {
       "name": "hackaton",
@@ -65,35 +87,13 @@
         "three.js",
         "typescript"
       ],
-      "commits": 48,
-      "pull_requests": 15,
-      "merged_pull_requests": 14,
+      "commits": 54,
+      "pull_requests": 21,
+      "merged_pull_requests": 19,
       "contributors": 4,
-      "additions": 41876,
-      "deletions": 5118,
-      "pushed_at": "2026-11-12T08:50:27Z"
-    },
-    {
-      "name": "party",
-      "language": "JavaScript",
-      "languages": [
-        "JavaScript",
-        "CSS",
-        "HTML",
-        "Python",
-        "Procfile"
-      ],
-      "stack": [
-        "node.js",
-        "postgres"
-      ],
-      "commits": 48,
-      "pull_requests": 2,
-      "merged_pull_requests": 2,
-      "contributors": 3,
-      "additions": 10702,
-      "deletions": 3938,
-      "pushed_at": "2026-11-12T08:49:41Z"
+      "additions": 43436,
+      "deletions": 5467,
+      "pushed_at": "2026-11-12T09:36:40Z"
     },
     {
       "name": "jurassic-run",
@@ -112,13 +112,13 @@
         "vite",
         "vitest"
       ],
-      "commits": 24,
+      "commits": 33,
       "pull_requests": 5,
       "merged_pull_requests": 1,
       "contributors": 3,
-      "additions": 32098,
-      "deletions": 1032,
-      "pushed_at": "2026-11-12T08:49:34Z"
+      "additions": 33392,
+      "deletions": 1476,
+      "pushed_at": "2026-11-12T09:41:08Z"
     },
     {
       "name": "vinnarmaskinen",
@@ -136,13 +136,13 @@
         "typescript",
         "vite"
       ],
-      "commits": 17,
-      "pull_requests": 4,
-      "merged_pull_requests": 4,
+      "commits": 23,
+      "pull_requests": 7,
+      "merged_pull_requests": 6,
       "contributors": 3,
-      "additions": 12144,
-      "deletions": 1731,
-      "pushed_at": "2026-11-11T17:08:43Z"
+      "additions": 12595,
+      "deletions": 1876,
+      "pushed_at": "2026-11-12T09:40:34Z"
     },
     {
       "name": "konfetti",
@@ -158,13 +158,13 @@
         "html/css/js",
         "rust"
       ],
-      "commits": 15,
+      "commits": 16,
       "pull_requests": 0,
       "merged_pull_requests": 0,
       "contributors": 2,
-      "additions": 71061,
-      "deletions": 1672,
-      "pushed_at": "2026-11-12T08:23:41Z"
+      "additions": 71493,
+      "deletions": 1704,
+      "pushed_at": "2026-11-12T09:32:23Z"
     },
     {
       "name": "homehero",
@@ -176,13 +176,30 @@
       "stack": [
         "html/css/js"
       ],
-      "commits": 10,
-      "pull_requests": 1,
-      "merged_pull_requests": 1,
+      "commits": 14,
+      "pull_requests": 2,
+      "merged_pull_requests": 2,
       "contributors": 2,
-      "additions": 1631,
-      "deletions": 387,
-      "pushed_at": "2026-11-12T07:59:36Z"
+      "additions": 2303,
+      "deletions": 404,
+      "pushed_at": "2026-11-12T09:30:17Z"
+    },
+    {
+      "name": "KeyboardOnly",
+      "language": "HTML",
+      "languages": [
+        "HTML"
+      ],
+      "stack": [
+        "html/css/js"
+      ],
+      "commits": 6,
+      "pull_requests": 3,
+      "merged_pull_requests": 3,
+      "contributors": 1,
+      "additions": 5479,
+      "deletions": 87,
+      "pushed_at": "2026-11-12T09:40:08Z"
     },
     {
       "name": "carpesignum",
@@ -191,13 +208,13 @@
         "Swift"
       ],
       "stack": [],
-      "commits": 4,
+      "commits": 5,
       "pull_requests": 0,
       "merged_pull_requests": 0,
       "contributors": 3,
-      "additions": 5036,
-      "deletions": 364,
-      "pushed_at": "2026-11-11T15:02:05Z"
+      "additions": 5222,
+      "deletions": 540,
+      "pushed_at": "2026-11-12T08:53:11Z"
     },
     {
       "name": "repo-config-test",
@@ -355,57 +372,63 @@
     {
       "t": "2026-11-12T08:00:00.000Z",
       "label": "09:00",
-      "commits": 22,
-      "cumulative": 220
+      "commits": 30,
+      "cumulative": 228
+    },
+    {
+      "t": "2026-11-12T09:00:00.000Z",
+      "label": "10:00",
+      "commits": 38,
+      "cumulative": 266
     }
   ],
   "languages": [
     {
       "name": "TypeScript",
-      "bytes": 626691,
-      "share": 0.32002816819414603,
+      "bytes": 653215,
+      "share": 0.2947371318295708,
       "repos": 4
+    },
+    {
+      "name": "HTML",
+      "bytes": 530647,
+      "share": 0.23943322611080003,
+      "repos": 7
     },
     {
       "name": "Shell",
       "bytes": 375361,
-      "share": 0.19168313130637404,
+      "share": 0.16936663202877997,
       "repos": 1
     },
     {
       "name": "JavaScript",
-      "bytes": 363222,
-      "share": 0.1854841880732516,
-      "repos": 6
-    },
-    {
-      "name": "HTML",
-      "bytes": 309324,
-      "share": 0.15796045116091667,
+      "bytes": 370498,
+      "share": 0.16717239786072322,
       "repos": 6
     },
     {
       "name": "CSS",
-      "bytes": 127700,
-      "share": 0.06521171849985472,
+      "bytes": 130603,
+      "share": 0.05892937796642366,
       "repos": 6
     },
     {
       "name": "Swift",
       "bytes": 66027,
-      "share": 0.0337175735112757,
+      "share": 0.029792041828970658,
       "repos": 1
     },
     {
       "name": "Rust",
       "bytes": 50006,
-      "share": 0.025536234888831128,
+      "share": 0.022563206623040677,
       "repos": 1
     },
     {
       "name": "annat",
       "bytes": 39906,
-      "share": 0.020378534365350056,
+      "share": 0.01800598575169102,
       "repos": 0
     }
   ],
@@ -419,15 +442,15 @@
       "repos": 4
     },
     {
+      "name": "html/css/js",
+      "repos": 3
+    },
+    {
       "name": "vite",
       "repos": 3
     },
     {
       "name": "github actions",
-      "repos": 2
-    },
-    {
-      "name": "html/css/js",
       "repos": 2
     },
     {
@@ -469,44 +492,44 @@
   ],
   "topContributors": [
     {
+      "login": "perarnborg",
+      "commits": 32
+    },
+    {
       "login": "claracollman",
       "commits": 29
     },
     {
-      "login": "perarnborg",
-      "commits": 29
-    },
-    {
       "login": "jbergqvist",
-      "commits": 23
+      "commits": 26
     },
     {
       "login": "aejlindberg",
-      "commits": 21
-    },
-    {
-      "login": "meltcheese",
-      "commits": 14
+      "commits": 25
     },
     {
       "login": "abeijnoff",
-      "commits": 13
+      "commits": 21
     },
     {
       "login": "signegab",
-      "commits": 13
+      "commits": 16
+    },
+    {
+      "login": "meltcheese",
+      "commits": 15
+    },
+    {
+      "login": "akkilstrom",
+      "commits": 15
     },
     {
       "login": "samuelbrynolf",
       "commits": 12
     },
     {
-      "login": "akkilstrom",
-      "commits": 12
-    },
-    {
       "login": "dennerkrans",
-      "commits": 10
+      "commits": 11
     }
   ]
 }

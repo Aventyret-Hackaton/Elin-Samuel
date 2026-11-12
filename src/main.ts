@@ -426,9 +426,8 @@ function buildHud() {
   hudTl = tl;
   tl.from('.card', { opacity: 0, scale: 0.7, stagger: 0.04, duration: 0.6 }, 0);
   gsap.to(ring, { rotationY: '+=360', duration: 10, ease: 'none', repeat: -1 }); // 2,5x snabbare än förut (25 s/varv)
-  // Rubriken över personerna. Antalet är antalet repon i organisationen (visas i gemener, enligt sajtens regel).
-  const repoCount = github?.totals.repos ?? 0;
-  const title = `${repoCount ? repoCount + ' ' : ''}meningslösa projekt. ett (1) mer onödigt än de andra. faktiskt.`;
+  // Rubriken över personerna. Antalet är antalet tävlande grupper (CONFIG.projectCount), inte antalet repon.
+  const title = `${CONFIG.projectCount} meningslösa projekt. ett (1) mer onödigt än de andra. faktiskt.`;
   tl.add(typeInto(finalTitle, `> ${title}`, 30), 0.6);
   tl.call(showContinue, [], GALLERY_SECONDS);
 }
