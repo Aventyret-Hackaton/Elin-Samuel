@@ -109,6 +109,8 @@ export class PlateRoom implements RoomLike {
   promptSubmitted = false;
   /** Vinnarens reponamn för skärmläget 'reveal'. */
   winnerName = '';
+  /** Anropas när bilens ljuskägla börjar svepa (sekunder). main.ts spelar ljudet. */
+  onCarPass: ((dur: number) => void) | null = null;
   screenState: ScreenState = 'off';
 
   private mouse = new THREE.Vector2();
@@ -499,7 +501,10 @@ export class PlateRoom implements RoomLike {
 
     // Bilens ljuskägla över väggarna var ~12–18 s
     const car = u.uCar.value as THREE.Vector2;
-    if (this.carT < 0 && t > this.carNext && this.lit > 0.8) this.carT = 0;
+    if (this.carT < 0 && t > this.carNext && this.lit > 0.8) {
+      this.carT = 0;
+      this.onCarPass?.(5); // ljudet av bilen, samma längd som ljussvepet
+    }
     if (this.carT >= 0) {
       this.carT += dt / 5;
       const k = this.carT;
