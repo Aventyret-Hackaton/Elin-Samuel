@@ -1,6 +1,9 @@
 // Alla kampanjtexter på ett ställe. Inga versaler: allt skrivs och visas i gemener.
 export const CONFIG = {
   bootName: 'hackathon.exe',
+  // Antalet tävlande grupper i hackathonet. Används i rubriken över personerna i scen 2.
+  // Inte samma sak som antalet repon i orgen (där ingår även kampanjrepot och testrepon).
+  projectCount: 8,
   // Medier och data. Byt filerna i /public, ingen kodändring.
   media: {
     video: 'media/video.mp4',
