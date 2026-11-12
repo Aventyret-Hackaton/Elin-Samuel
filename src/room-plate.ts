@@ -59,6 +59,7 @@ function plateUniform() {
     exposure: 1,
     hasScreen: 0,
     screenInv: new THREE.Matrix3(),
+    screenFwd: new THREE.Matrix3(),
     screenC: new THREE.Vector2(),
     hasWindow: 0,
     signInv: new THREE.Matrix3(),
@@ -154,6 +155,7 @@ export class PlateRoom implements RoomLike {
     this.A.focus = d.focus ?? 0.5;
     this.A.exposure = d.exposure ?? 1;
     this.A.hasScreen = 1;
+    this.A.screenFwd = squareToQuad(d.screen);
     this.A.screenInv = squareToQuad(d.screen).invert();
     this.A.screenC = centroid(d.screen);
     if (d.blinds && d.pane) {
@@ -211,6 +213,7 @@ export class PlateRoom implements RoomLike {
       uPanB: { value: new THREE.Vector2() },
       uBlur: { value: 0 },
       uDirect: { value: 0 },
+      uRect: { value: 0 },
       uCover: { value: new THREE.Vector2(1, 1) },
     };
     this.mat = new THREE.ShaderMaterial({
@@ -490,7 +493,9 @@ export class PlateRoom implements RoomLike {
     u.uScreenGain.value = Math.max(0, pw * (1 + (flick - 1) * 2) * 1.5);
     (u.uScreenCol.value as THREE.Color).set(0x6bff97).lerp(new THREE.Color(0xff3d7f), w);
     u.uBarrel.value = 0.06 * (1 - this.zoom);
-    u.uDirect.value = THREE.MathUtils.smoothstep(this.zoom, 0.9, 1.0) * (1 - (u.uMix.value as number)) * (1 - THREE.MathUtils.smoothstep(w, 0, 0.15));
+    // Upprätningen börjar när skärmen fyller större delen av vyn och är klar vid full zoom
+    u.uRect.value = THREE.MathUtils.smoothstep(this.zoom, 0.6, 1.0) * (1 - (u.uMix.value as number)) * (1 - THREE.MathUtils.smoothstep(w, 0, 0.15));
+    u.uDirect.value = 0;
 
     // Bilens ljuskägla över väggarna var ~12–18 s
     const car = u.uCar.value as THREE.Vector2;

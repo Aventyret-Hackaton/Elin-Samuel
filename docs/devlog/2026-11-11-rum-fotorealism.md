@@ -56,6 +56,12 @@ Elin ville visa vinnarens reponamn på datorskärmen i stället för neonskylten
 - Testgenvägar: `?skip=reveal` (inzoomat från början), `?skip=winner` (slutbilden). `?skip=blinds` är borttagen.
 - Verifierat i realtid: hela Y-vägen från HUD → regn → namn → utåkning.
 
+## Uppdatering 2026-11-12: mjukare zoom in i skärmen
+Tidigare tonades den snedvinklade skärmen i fotot över till en rak helskärmsbild mellan 90 och 100 % zoom.
+Geometrierna skilde sig åt, så texten syntes dubbel och hoppade till. Nu rätas vyn i stället upp gradvis längs
+skärmens homografi (60–100 % zoom, `uRect` i `plate-shader.ts`), så att skärmen vid full zoom fyller fönstret exakt.
+Det finns alltså aldrig två bilder samtidigt. Glasreflexen tonas bort i takt med upprätningen. Verifierat i stillbilder vid 55, 70, 80, 90, 95 och 100 %.
+
 ## Öppna frågor
 - Ljudet i scen 3 (tangentklick + pip) är inte avlyssnat av en människa.
 - **Djupkartan** är grov och handgjord. En riktig (Depth Anything eller liknande) ger bättre parallax.

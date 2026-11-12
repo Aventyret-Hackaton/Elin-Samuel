@@ -28,6 +28,7 @@ struct Plate {
   float exposure;
   float hasScreen;
   mat3 screenInv;  // bild -> skärm-uv
+  mat3 screenFwd;  // skärm-uv -> bild
   vec2 screenC;
   float hasWindow;
   mat3 signInv;    // bild -> skylt-uv (ytan bakom persiennen)
@@ -69,7 +70,8 @@ uniform float uMix;       // 0 = vy A, 1 = vy B (två-vy-läget)
 uniform vec2 uPanA;
 uniform vec2 uPanB;
 uniform float uBlur;
-uniform float uDirect;    // skärmen direkt i helbild (full zoom)
+uniform float uDirect;    // (oanvänd, kvar för kompatibilitet)
+uniform float uRect;      // 0 = vanlig vy, 1 = skärmen upprätad till exakt helbild (full zoom)
 uniform vec2 uCover;
 
 vec3 tex(sampler2D t, vec2 p) { return texture2D(t, vec2(p.x, 1.0 - p.y)).rgb; }
@@ -119,6 +121,13 @@ vec4 codeBlinds(float v, vec3 behind) {
 
 vec3 shade(Plate P, sampler2D T, sampler2D D, vec2 ndc, vec2 pan) {
   vec2 p = P.c + pan + vec2(ndc.x * P.h.x, -ndc.y * P.h.y);
+  // Sista delen av zoomen: vyn rätas gradvis upp längs skärmens homografi, så att skärmen vid full zoom
+  // fyller fönstret exakt (cover). Ingen övertoning mellan två bilder, alltså inga dubbla konturer.
+  float rect = uRect * P.hasScreen;
+  if (rect > 0.0) {
+    vec2 cuv = (vUv - 0.5) * uCover + 0.5;
+    p = mix(p, homo(P.screenFwd, vec2(cuv.x, 1.0 - cuv.y)), rect);
+  }
   vec2 q = parallax(D, p, P.focus);
   float z = dep(D, q);
   vec3 base = sampleBlur(T, q, uBlur) * P.exposure;
@@ -152,7 +161,7 @@ vec3 shade(Plate P, sampler2D T, sampler2D D, vec2 ndc, vec2 pan) {
     vec2 buv = cuv * (1.0 + uBarrel * dot(cuv, cuv)) + 0.5;
     float m = insideMask(buv, fwidth(buv) * 1.5);
     vec3 sc = texture2D(tScreen, vec2(buv.x, 1.0 - buv.y)).rgb * uScreenGain;
-    sc += max(0.0, 0.35 - (buv.x + buv.y) * 0.5) * 0.25 * uPower;
+    sc += max(0.0, 0.35 - (buv.x + buv.y) * 0.5) * 0.25 * uPower * (1.0 - rect);
     col = mix(col, sc, m);
   }
 
