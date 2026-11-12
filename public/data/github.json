@@ -1,19 +1,19 @@
 {
   "org": "Aventyret-Hackaton",
-  "generatedAt": "2026-11-11T16:40:40.309Z",
+  "generatedAt": "2026-11-12T08:51:23.160Z",
   "totals": {
     "repos": 9,
-    "commits": 154,
-    "pull_requests": 26,
-    "merged_pull_requests": 19,
-    "contributors": 21,
-    "additions": 96100,
-    "deletions": 11355,
+    "commits": 220,
+    "pull_requests": 40,
+    "merged_pull_requests": 34,
+    "contributors": 23,
+    "additions": 181292,
+    "deletions": 14735,
     "languages": 11,
-    "files": 698,
-    "source_files": 205,
-    "npm_packages": 33,
-    "ai_commits": 80
+    "files": 817,
+    "source_files": 255,
+    "npm_packages": 32,
+    "ai_commits": 110
   },
   "peakHour": {
     "commits": 42,
@@ -21,7 +21,7 @@
   },
   "topRepo": {
     "name": "ymca",
-    "commits": 46
+    "commits": 54
   },
   "repos": [
     {
@@ -38,35 +38,13 @@
         "typescript",
         "vite"
       ],
-      "commits": 46,
-      "pull_requests": 10,
-      "merged_pull_requests": 9,
+      "commits": 54,
+      "pull_requests": 13,
+      "merged_pull_requests": 12,
       "contributors": 3,
-      "additions": 6423,
-      "deletions": 463,
-      "pushed_at": "2026-11-11T15:16:00Z"
-    },
-    {
-      "name": "party",
-      "language": "JavaScript",
-      "languages": [
-        "JavaScript",
-        "CSS",
-        "HTML",
-        "Python",
-        "Procfile"
-      ],
-      "stack": [
-        "node.js",
-        "postgres"
-      ],
-      "commits": 37,
-      "pull_requests": 2,
-      "merged_pull_requests": 2,
-      "contributors": 3,
-      "additions": 9406,
-      "deletions": 3676,
-      "pushed_at": "2026-11-11T16:33:47Z"
+      "additions": 6744,
+      "deletions": 493,
+      "pushed_at": "2026-11-12T08:42:52Z"
     },
     {
       "name": "hackaton",
@@ -87,13 +65,35 @@
         "three.js",
         "typescript"
       ],
-      "commits": 30,
-      "pull_requests": 7,
-      "merged_pull_requests": 5,
+      "commits": 48,
+      "pull_requests": 15,
+      "merged_pull_requests": 14,
       "contributors": 4,
-      "additions": 30202,
-      "deletions": 4458,
-      "pushed_at": "2026-11-11T16:18:18Z"
+      "additions": 41876,
+      "deletions": 5118,
+      "pushed_at": "2026-11-12T08:50:27Z"
+    },
+    {
+      "name": "party",
+      "language": "JavaScript",
+      "languages": [
+        "JavaScript",
+        "CSS",
+        "HTML",
+        "Python",
+        "Procfile"
+      ],
+      "stack": [
+        "node.js",
+        "postgres"
+      ],
+      "commits": 48,
+      "pull_requests": 2,
+      "merged_pull_requests": 2,
+      "contributors": 3,
+      "additions": 10702,
+      "deletions": 3938,
+      "pushed_at": "2026-11-12T08:49:41Z"
     },
     {
       "name": "jurassic-run",
@@ -112,16 +112,16 @@
         "vite",
         "vitest"
       ],
-      "commits": 18,
+      "commits": 24,
       "pull_requests": 5,
       "merged_pull_requests": 1,
       "contributors": 3,
-      "additions": 31842,
-      "deletions": 1013,
-      "pushed_at": "2026-11-11T15:42:11Z"
+      "additions": 32098,
+      "deletions": 1032,
+      "pushed_at": "2026-11-12T08:49:34Z"
     },
     {
-      "name": "Elin-Samuel",
+      "name": "vinnarmaskinen",
       "language": "TypeScript",
       "languages": [
         "TypeScript",
@@ -130,20 +130,59 @@
         "HTML"
       ],
       "stack": [
-        "chart.js",
         "gsap",
         "node.js",
         "three.js",
         "typescript",
         "vite"
       ],
-      "commits": 13,
-      "pull_requests": 2,
-      "merged_pull_requests": 2,
+      "commits": 17,
+      "pull_requests": 4,
+      "merged_pull_requests": 4,
       "contributors": 3,
-      "additions": 10216,
-      "deletions": 1107,
-      "pushed_at": "2026-11-11T16:23:44Z"
+      "additions": 12144,
+      "deletions": 1731,
+      "pushed_at": "2026-11-11T17:08:43Z"
+    },
+    {
+      "name": "konfetti",
+      "language": "HTML",
+      "languages": [
+        "HTML",
+        "JavaScript",
+        "Rust",
+        "CSS",
+        "Makefile"
+      ],
+      "stack": [
+        "html/css/js",
+        "rust"
+      ],
+      "commits": 15,
+      "pull_requests": 0,
+      "merged_pull_requests": 0,
+      "contributors": 2,
+      "additions": 71061,
+      "deletions": 1672,
+      "pushed_at": "2026-11-12T08:23:41Z"
+    },
+    {
+      "name": "homehero",
+      "language": "HTML",
+      "languages": [
+        "HTML",
+        "JavaScript"
+      ],
+      "stack": [
+        "html/css/js"
+      ],
+      "commits": 10,
+      "pull_requests": 1,
+      "merged_pull_requests": 1,
+      "contributors": 2,
+      "additions": 1631,
+      "deletions": 387,
+      "pushed_at": "2026-11-12T07:59:36Z"
     },
     {
       "name": "carpesignum",
@@ -159,45 +198,6 @@
       "additions": 5036,
       "deletions": 364,
       "pushed_at": "2026-11-11T15:02:05Z"
-    },
-    {
-      "name": "homehero",
-      "language": "HTML",
-      "languages": [
-        "HTML",
-        "JavaScript"
-      ],
-      "stack": [
-        "html/css/js"
-      ],
-      "commits": 4,
-      "pull_requests": 0,
-      "merged_pull_requests": 0,
-      "contributors": 1,
-      "additions": 597,
-      "deletions": 20,
-      "pushed_at": "2026-11-11T14:08:30Z"
-    },
-    {
-      "name": "konfetti",
-      "language": "JavaScript",
-      "languages": [
-        "JavaScript",
-        "Rust",
-        "HTML",
-        "Makefile"
-      ],
-      "stack": [
-        "html/css/js",
-        "rust"
-      ],
-      "commits": 2,
-      "pull_requests": 0,
-      "merged_pull_requests": 0,
-      "contributors": 1,
-      "additions": 2378,
-      "deletions": 254,
-      "pushed_at": "2026-11-11T15:21:06Z"
     },
     {
       "name": "repo-config-test",
@@ -259,57 +259,153 @@
     {
       "t": "2026-11-11T16:00:00.000Z",
       "label": "17:00",
-      "commits": 14,
-      "cumulative": 154
+      "commits": 17,
+      "cumulative": 157
+    },
+    {
+      "t": "2026-11-11T17:00:00.000Z",
+      "label": "18:00",
+      "commits": 9,
+      "cumulative": 166
+    },
+    {
+      "t": "2026-11-11T18:00:00.000Z",
+      "label": "19:00",
+      "commits": 2,
+      "cumulative": 168
+    },
+    {
+      "t": "2026-11-11T19:00:00.000Z",
+      "label": "20:00",
+      "commits": 1,
+      "cumulative": 169
+    },
+    {
+      "t": "2026-11-11T20:00:00.000Z",
+      "label": "21:00",
+      "commits": 6,
+      "cumulative": 175
+    },
+    {
+      "t": "2026-11-11T21:00:00.000Z",
+      "label": "22:00",
+      "commits": 4,
+      "cumulative": 179
+    },
+    {
+      "t": "2026-11-11T22:00:00.000Z",
+      "label": "23:00",
+      "commits": 5,
+      "cumulative": 184
+    },
+    {
+      "t": "2026-11-11T23:00:00.000Z",
+      "label": "00:00",
+      "commits": 1,
+      "cumulative": 185
+    },
+    {
+      "t": "2026-11-12T00:00:00.000Z",
+      "label": "01:00",
+      "commits": 1,
+      "cumulative": 186
+    },
+    {
+      "t": "2026-11-12T01:00:00.000Z",
+      "label": "02:00",
+      "commits": 0,
+      "cumulative": 186
+    },
+    {
+      "t": "2026-11-12T02:00:00.000Z",
+      "label": "03:00",
+      "commits": 1,
+      "cumulative": 187
+    },
+    {
+      "t": "2026-11-12T03:00:00.000Z",
+      "label": "04:00",
+      "commits": 0,
+      "cumulative": 187
+    },
+    {
+      "t": "2026-11-12T04:00:00.000Z",
+      "label": "05:00",
+      "commits": 1,
+      "cumulative": 188
+    },
+    {
+      "t": "2026-11-12T05:00:00.000Z",
+      "label": "06:00",
+      "commits": 0,
+      "cumulative": 188
+    },
+    {
+      "t": "2026-11-12T06:00:00.000Z",
+      "label": "07:00",
+      "commits": 0,
+      "cumulative": 188
+    },
+    {
+      "t": "2026-11-12T07:00:00.000Z",
+      "label": "08:00",
+      "commits": 10,
+      "cumulative": 198
+    },
+    {
+      "t": "2026-11-12T08:00:00.000Z",
+      "label": "09:00",
+      "commits": 22,
+      "cumulative": 220
     }
   ],
   "languages": [
     {
       "name": "TypeScript",
-      "bytes": 406678,
-      "share": 0.3450172136168278,
+      "bytes": 626691,
+      "share": 0.32002816819414603,
       "repos": 4
     },
     {
       "name": "Shell",
       "bytes": 375361,
-      "share": 0.31844851779645345,
+      "share": 0.19168313130637404,
       "repos": 1
     },
     {
       "name": "JavaScript",
-      "bytes": 154654,
-      "share": 0.1312052585945069,
+      "bytes": 363222,
+      "share": 0.1854841880732516,
+      "repos": 6
+    },
+    {
+      "name": "HTML",
+      "bytes": 309324,
+      "share": 0.15796045116091667,
       "repos": 6
     },
     {
       "name": "CSS",
-      "bytes": 74252,
-      "share": 0.0629938628238476,
-      "repos": 5
+      "bytes": 127700,
+      "share": 0.06521171849985472,
+      "repos": 6
     },
     {
       "name": "Swift",
       "bytes": 66027,
-      "share": 0.05601594274457504,
+      "share": 0.0337175735112757,
       "repos": 1
     },
     {
-      "name": "HTML",
-      "bytes": 41977,
-      "share": 0.03561241959484796,
-      "repos": 6
-    },
-    {
-      "name": "Dockerfile",
-      "bytes": 32315,
-      "share": 0.02741537840263744,
+      "name": "Rust",
+      "bytes": 50006,
+      "share": 0.025536234888831128,
       "repos": 1
     },
     {
       "name": "annat",
-      "bytes": 27454,
-      "share": 0.023291406426303833,
+      "bytes": 39906,
+      "share": 0.020378534365350056,
       "repos": 0
     }
   ],
@@ -343,10 +439,6 @@
       "repos": 2
     },
     {
-      "name": "chart.js",
-      "repos": 1
-    },
-    {
       "name": "claude api",
       "repos": 1
     },
@@ -378,43 +470,43 @@
   "topContributors": [
     {
       "login": "claracollman",
-      "commits": 27
+      "commits": 29
     },
     {
       "login": "perarnborg",
-      "commits": 20
+      "commits": 29
     },
     {
       "login": "jbergqvist",
-      "commits": 17
+      "commits": 23
     },
     {
       "login": "aejlindberg",
-      "commits": 15
+      "commits": 21
+    },
+    {
+      "login": "meltcheese",
+      "commits": 14
+    },
+    {
+      "login": "abeijnoff",
+      "commits": 13
     },
     {
       "login": "signegab",
       "commits": 13
     },
     {
-      "login": "abeijnoff",
-      "commits": 9
-    },
-    {
       "login": "samuelbrynolf",
-      "commits": 8
+      "commits": 12
     },
     {
       "login": "akkilstrom",
-      "commits": 7
+      "commits": 12
     },
     {
-      "login": "meltcheese",
-      "commits": 6
-    },
-    {
-      "login": "Magnus Eriksson",
-      "commits": 6
+      "login": "dennerkrans",
+      "commits": 10
     }
   ]
 }
