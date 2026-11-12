@@ -60,6 +60,8 @@ export class Room {
   promptSubmitted = false;
   /** Vinnarens reponamn för skärmläget 'reveal'. */
   winnerName = '';
+  /** Anropas när bilens ljuskägla börjar svepa (sekunder). main.ts spelar ljudet. */
+  onCarPass: ((dur: number) => void) | null = null;
   private fitDist = 1;
   private screenGroup = new THREE.Group();
   private screenCenter = new THREE.Vector3(0.9, 1.2, -1.646);
@@ -478,7 +480,10 @@ export class Room {
     (this.ledPink.material as THREE.MeshBasicMaterial).color.setScalar(pw * (Math.sin(t * 2.2) > 0.2 ? 1.6 : 0.2)).multiply(new THREE.Color(0xff3d7f));
 
     // Bilens ljuskägla över bakväggen var ~12–18 s
-    if (this.carT < 0 && t > this.carNext && lit > 0.8) this.carT = 0;
+    if (this.carT < 0 && t > this.carNext && lit > 0.8) {
+      this.carT = 0;
+      this.onCarPass?.(5); // ljudet av bilen, samma längd som ljussvepet
+    }
     if (this.carT >= 0) {
       this.carT += dt / 5;
       const k = this.carT;

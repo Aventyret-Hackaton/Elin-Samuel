@@ -5,7 +5,7 @@ import { PlateRoom } from './room-plate';
 import type { PlateJson, RoomLike } from './room-types';
 import { savePlateFile, startCalibrate, isCalibrateTarget } from './plate-tools';
 import { CONFIG, BASE } from './config';
-import { ensureAudio, playModem, playHum, blip, whoosh, keyClick } from './audio';
+import { ensureAudio, playModem, playHum, blip, whoosh, keyClick, carPass, victoryFanfare } from './audio';
 import { REVEAL } from './canvases';
 
 
@@ -47,6 +47,8 @@ async function createRoom(canvas: HTMLCanvasElement): Promise<RoomLike> {
 }
 
 const room = await createRoom($<HTMLCanvasElement>('gl'));
+// Bilen utanför: ljudet följer ljuskäglan (spelas bara när ljudet är upplåst)
+room.onCarPass = (dur) => carPass(dur);
 
 // Utvecklarlägen för fotorummet: ?export=plate (rendera kodrummet som bilder), ?calibrate=screen|blinds|pane|sign|window
 if (params.get('export') === 'plate' && room instanceof Room) {
@@ -526,7 +528,7 @@ function goReveal() {
     room.paused = false;
     room.revealOnScreen(winnerName(), now);
     stopHum = playHum();
-    // Rasslet: täta, oregelbundna tangentklick tills sista tecknet låst sig, ett pip när namnet står
+    // Rasslet: täta, oregelbundna tangentklick tills sista tecknet låst sig, sedan vinstfanfaren
     const clicks = { n: 0 };
     gsap.to(clicks, {
       n: 90,
@@ -536,7 +538,7 @@ function goReveal() {
         if (Math.random() < 0.55) keyClick();
       },
     });
-    gsap.delayedCall(REVEAL.lockedAt, () => blip(1320, 0.12));
+    gsap.delayedCall(REVEAL.lockedAt, victoryFanfare); // 8-bitars "banan klarad" när namnet står
     // Sedan åker kameran långsamt ut till rummet, så man ser datorn med namnet på skärmen
     gsap.to(room, {
       zoom: 0,

@@ -222,3 +222,154 @@ export function rattle(dur = 2.6) {
     gap = Math.max(0.028, gap * 0.94);
   }
 }
+
+/**
+ * Bil som kör förbi på blöt gata utanför: däckväs, dovt motorljud, dopplereffekt och panorering vänster -> höger.
+ * Synkas med bilens ljuskägla (som är starkast mitt i svepet). Dämpat, som genom en källarvägg, och lite olika varje gång.
+ * Spelas bara om ljudet redan är upplåst (boot-gaten), så inget AudioContext skapas utan användargest.
+ */
+export function carPass(dur = 5) {
+  if (!ctx || ctx.state !== 'running') return;
+  const c = ctx;
+  const t0 = c.currentTime + 0.05;
+  const mid = t0 + dur * 0.5;
+  const end = t0 + dur;
+  const vary = 0.85 + Math.random() * 0.3; // olika bilar: tonhöjd och styrka
+
+  const out = c.createGain();
+  out.gain.setValueAtTime(0.0001, t0);
+  out.gain.exponentialRampToValueAtTime(0.16 * vary, mid); // närmast mitt i svepet
+  out.gain.exponentialRampToValueAtTime(0.0001, end);
+  const pan = c.createStereoPanner();
+  pan.pan.setValueAtTime(-0.85, t0);
+  pan.pan.linearRampToValueAtTime(0.85, end);
+  // Väggen: mörkare ljud långt bort, ljusare när bilen är som närmast
+  const wall = c.createBiquadFilter();
+  wall.type = 'lowpass';
+  wall.frequency.setValueAtTime(700, t0);
+  wall.frequency.exponentialRampToValueAtTime(2600, mid);
+  wall.frequency.exponentialRampToValueAtTime(600, end);
+  out.connect(wall).connect(pan).connect(c.destination);
+
+  // Däck mot blöt asfalt: brus i ett band som glider nedåt när bilen passerat (doppler)
+  const hiss = c.createBufferSource();
+  hiss.buffer = noiseBuffer(c, dur + 0.3);
+  const band = c.createBiquadFilter();
+  band.type = 'bandpass';
+  band.Q.value = 0.7;
+  band.frequency.setValueAtTime(1500 * vary, t0);
+  band.frequency.linearRampToValueAtTime(1700 * vary, mid - 0.15);
+  band.frequency.exponentialRampToValueAtTime(950 * vary, mid + 0.35);
+  band.frequency.linearRampToValueAtTime(800 * vary, end);
+  const hg = c.createGain();
+  hg.gain.value = 1.0;
+  hiss.connect(band).connect(hg).connect(out);
+  hiss.start(t0);
+  hiss.stop(end + 0.1);
+
+  // Motor: två lågt filtrerade sågtänder som glider ned över passagen
+  for (const [f, v] of [[46, 0.5], [92, 0.25]] as const) {
+    const o = c.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f * 1.07 * vary, t0);
+    o.frequency.linearRampToValueAtTime(f * 1.05 * vary, mid - 0.2);
+    o.frequency.exponentialRampToValueAtTime(f * 0.93 * vary, mid + 0.4);
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 220;
+    const og = c.createGain();
+    og.gain.value = v;
+    o.connect(lp).connect(og).connect(out);
+    o.start(t0);
+    o.stop(end + 0.1);
+  }
+  // Lågt rummel från vägen
+  const rumble = c.createBufferSource();
+  rumble.buffer = noiseBuffer(c, dur + 0.3);
+  const rl = c.createBiquadFilter();
+  rl.type = 'lowpass';
+  rl.frequency.value = 120;
+  const rg = c.createGain();
+  rg.gain.value = 1.4;
+  rumble.connect(rl).connect(rg).connect(out);
+  rumble.start(t0);
+  rumble.stop(end + 0.1);
+}
+
+// ---------- Vinstfanfar i 8-bitarsstil ----------
+// Egen komposition (I–IV–V–I i C-dur), inte en kopia av någon spelmelodi. NES-känsla: pulsvåg 50 % och 25 %,
+// triangelvåg i basen, raka toner med kort attack och tvärt slut.
+const HZ: Record<string, number> = {
+  C3: 130.81, F3: 174.61, G3: 196.0,
+  G4: 392.0, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.0, B5: 987.77,
+  C6: 1046.5, D6: 1174.66, E6: 1318.51,
+};
+
+let pulse25: PeriodicWave | null = null;
+function pulseWave(c: AudioContext, duty: number): PeriodicWave {
+  const n = 32;
+  const re = new Float32Array(n);
+  const im = new Float32Array(n);
+  for (let k = 1; k < n; k++) im[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * duty);
+  return c.createPeriodicWave(re, im);
+}
+
+function chipNote(
+  c: AudioContext,
+  out: AudioNode,
+  freq: number,
+  start: number,
+  dur: number,
+  vol: number,
+  kind: 'square' | 'pulse25' | 'triangle',
+  vibrato = false,
+) {
+  const o = c.createOscillator();
+  if (kind === 'pulse25') o.setPeriodicWave((pulse25 ??= pulseWave(c, 0.25)));
+  else o.type = kind;
+  o.frequency.setValueAtTime(freq, start);
+  if (vibrato) {
+    const lfo = c.createOscillator();
+    const depth = c.createGain();
+    lfo.frequency.value = 6;
+    depth.gain.setValueAtTime(0, start);
+    depth.gain.linearRampToValueAtTime(freq * 0.012, start + 0.25);
+    lfo.connect(depth).connect(o.frequency);
+    lfo.start(start);
+    lfo.stop(start + dur + 0.05);
+  }
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, start);
+  g.gain.linearRampToValueAtTime(vol, start + 0.006);
+  g.gain.setValueAtTime(vol, start + dur - 0.03);
+  g.gain.linearRampToValueAtTime(0, start + dur);
+  o.connect(g).connect(out);
+  o.start(start);
+  o.stop(start + dur + 0.02);
+}
+
+/** "Banan klarad": snabb arpeggio uppåt, två ackordstötar och ett hållet slutackord. ~2,3 s. */
+export function victoryFanfare() {
+  const c = ensureAudio();
+  const out = c.createGain();
+  out.gain.value = 0.085;
+  out.connect(c.destination);
+  const t0 = c.currentTime + 0.03;
+  const s = 0.075; // en sextondel
+  // Arpeggio uppåt
+  ['G4', 'C5', 'E5', 'G5', 'C6'].forEach((n, i) => chipNote(c, out, HZ[n], t0 + i * s, s * (i === 4 ? 3 : 0.95), 1, 'square'));
+  chipNote(c, out, HZ.C3, t0, s * 5, 0.9, 'triangle');
+  // Stötar: IV och V
+  const stab = (at: number, lead: string, harm: string[], bass: string) => {
+    chipNote(c, out, HZ[lead], at, s * 1.8, 1, 'square');
+    harm.forEach((h) => chipNote(c, out, HZ[h], at, s * 1.8, 0.55, 'pulse25'));
+    chipNote(c, out, HZ[bass], at, s * 1.8, 0.9, 'triangle');
+  };
+  stab(t0 + s * 8, 'C6', ['F5', 'A5'], 'F3');
+  stab(t0 + s * 11, 'D6', ['G5', 'B5'], 'G3');
+  // Slutackord, hållet med vibrato
+  const end = t0 + s * 14;
+  chipNote(c, out, HZ.E6, end, 1.05, 1, 'square', true);
+  ['C5', 'E5', 'G5'].forEach((h) => chipNote(c, out, HZ[h], end, 1.05, 0.5, 'pulse25'));
+  chipNote(c, out, HZ.C3, end, 1.05, 0.9, 'triangle');
+}

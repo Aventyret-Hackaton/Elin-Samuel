@@ -103,6 +103,9 @@ float insideMask(vec2 uv, vec2 aa) {
 
 vec3 grade() { return mix(vec3(1.0), vec3(1.22, 0.8, 0.9), uWinner * 0.7); }
 
+// Bilens strålkastare: ett mjukt band som sveper över väggarna (det som djupkartan säger ligger långt bort).
+// Föremål nära kameran, som datorn, lämnas mörka. Djupkartan behöver skarpa kanter som följer konturerna,
+// annars blir det en mörk ram runt föremålen (se docs/room/PROMPTS.md).
 vec3 carLight(vec2 q, float z, vec3 base) {
   float band = exp(-pow((q.x - uCar.x) / 0.09, 2.0));
   float far = smoothstep(0.55, 0.15, z);

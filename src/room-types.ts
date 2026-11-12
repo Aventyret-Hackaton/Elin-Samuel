@@ -25,6 +25,8 @@ export interface RoomLike {
   pointOnScreen(cx: number, cy: number, pad?: number): boolean;
   screenNdcBounds(): { minX: number; maxX: number; minY: number; maxY: number };
   update(dt: number, t: number): void;
+  /** Anropas när bilens ljuskägla börjar svepa över rummet (längd i sekunder). */
+  onCarPass: ((dur: number) => void) | null;
 }
 
 /** Fyra hörn i bilden, normaliserade 0–1 (x åt höger, y nedåt), ordning: övre vänster, övre höger, nedre höger, nedre vänster. */

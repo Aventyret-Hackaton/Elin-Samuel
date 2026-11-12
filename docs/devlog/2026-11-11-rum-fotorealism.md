@@ -62,6 +62,32 @@ Geometrierna skilde sig åt, så texten syntes dubbel och hoppade till. Nu räta
 skärmens homografi (60–100 % zoom, `uRect` i `plate-shader.ts`), så att skärmen vid full zoom fyller fönstret exakt.
 Det finns alltså aldrig två bilder samtidigt. Glasreflexen tonas bort i takt med upprätningen. Verifierat i stillbilder vid 55, 70, 80, 90, 95 och 100 %.
 
+## Uppdatering 2026-11-12: ljudet av bilen
+Bilens ljuskägla har fått ett ljud (`carPass` i `src/audio.ts`). Det är en bil på blöt gata (bilden har regn på rutan):
+däckväs i ett brusband, ett dovt motorljud av två sågtänder och lågt vägrummel. En dopplereffekt sänker tonhöjden
+när bilen passerat. Ljudet panoreras från vänster till höger som ljuset och lågpassfiltreras som genom en källarvägg,
+ljusast mitt i passagen. Varje passage varierar ±15 % i tonhöjd och styrka, så det inte blir tjatigt.
+- Synk: båda rummen anropar `onCarPass(5)` (nytt i `RoomLike`) samtidigt som svepet startar. `main.ts` spelar ljudet.
+- Ljudet spelas bara om AudioContext redan är upplåst av boot-gaten, så `?skip=`-lägen förblir tysta.
+- Verifierat: anropet sker i samma bildruta som svepet startar, och inga konsolfel. **Inte avlyssnat** av en människa.
+
+Rättning samma dag: när ljuskäglan passerade blev det en mörk ram runt datorn. Ljuset maskas med djupkartan
+(bara väggar långt bort får ljus, datorn ska vara mörk), men den handgjorda djupkartan hade datorn som en suddig
+rektangel. Den suddiga kanten gjorde att väggen runt datorn räknades som nära. Djupkartan är omgjord: datorn har sin
+uppmätta kontur (frontram, bakre kåpa, fot) med skarpa kanter, och föremålen målas efter suddningen av väggarna,
+så att ingen gloria uppstår. Lampan och hyllan målas inte längre (tunna föremål, rektanglar gav fel mask).
+Ett försök att ta bort djupmasken helt lyste upp datorn också, vilket Elin inte ville ha.
+Verifierat: förstärkt ljus över datorn ger ingen ram, och musen helt ut åt sidorna ger inga kantfel i parallaxen.
+
+## Uppdatering 2026-11-12: vinstfanfar
+- **Vinstfanfar** (`victoryFanfare` i `src/audio.ts`) spelas när vinnarnamnet låst sig (`REVEAL.lockedAt`) och ersätter pipet.
+  Elin ville ha något som liknar "banan klarad" i 8-bitars Super Mario. Själva melodin är upphovsrättsskyddad och kopieras inte.
+  Fanfaren är en egen komposition (I–IV–V–I i C-dur) med NES-känsla: fyrkantsvåg för melodin, 25 %-pulsvåg för stämmorna,
+  triangelvåg i basen, snabb arpeggio uppåt, två ackordstötar och ett hållet slutackord med vibrato (~2,3 s).
+- **Regnljud** prövades (först filtrerat brus, sedan tusentals små dropp-impulser), men lät som en datorfläkt
+  och blev inte bra. Elin valde bort det, och det är helt borttaget.
+- Verifierat: fanfaren spelar utan fel i konsolen och bygget går igenom. **Inte avlyssnad** av en människa.
+
 ## Öppna frågor
 - Ljudet i scen 3 (tangentklick + pip) är inte avlyssnat av en människa.
 - **Djupkartan** är grov och handgjord. En riktig (Depth Anything eller liknande) ger bättre parallax.
