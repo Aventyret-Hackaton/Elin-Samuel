@@ -52,6 +52,13 @@ och sparas aldrig. Utan token gäller 60 anrop/timme. Misslyckas hämtningen beh
 Exkludera repon: `GITHUB_EXCLUDE=vinnarmaskinen,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, vibekådare (bidragsgivare), rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
 Kör `npm run github` precis före lansering så siffrorna är färska.
 
+## Publicering
+GitHub Pages via Actions (`.github/workflows/pages.yml`). Varje push till `main` bygger och publicerar till
+https://aventyret-hackaton.github.io/vinnarmaskinen/. Kör bygget manuellt (Actions → Pages → Run workflow) precis före lansering,
+så hämtas färsk statistik. Bygget hämtar fonten och statistiken (`prebuild`) med repots egen token. Den har bara läsbehörighet, och alla repon i organisationen är publika.
+Sökvägarna följer `base_path` från Pages: undermappen `/vinnarmaskinen/` på github.io, och roten med egen domän.
+Egen domän (t.ex. `hackathon.aventyret.se`): lägg en CNAME-post mot `aventyret-hackaton.github.io` och ange domänen under Settings → Pages. Ingen kodändring behövs.
+
 ## Typsnitt
 Replica LL Regular (enda vikten, aldrig versaler: all text visas i gemener), självhostad woff2 med samma mönster som aventyret.se (`font-display: swap`, preload).
 `npm run dev`/`build` kör `scripts/fetch-font.mjs`, som hämtar `ReplicaLLWeb-Regular.woff2` från aventyret.se till `public/fonts/`.

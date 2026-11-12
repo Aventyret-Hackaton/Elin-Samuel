@@ -1,0 +1,50 @@
+# Bygger sajten och publicerar den på GitHub Pages vid varje push till main.
+# Kan också köras manuellt (Actions → Pages → Run workflow), t.ex. precis före lansering för färsk statistik.
+# Bygget hämtar fonten från aventyret.se och statistiken från GitHub-API:t (prebuild i package.json).
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# En publicering i taget. En pågående avbryts inte, så en halvklar deploy aldrig blir kvar.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: npm ci
+      # base_path är "/vinnarmaskinen" på github.io och tom med egen domän, så sökvägarna stämmer i båda fallen.
+      - run: npm run build -- --base=${{ steps.pages.outputs.base_path }}/
+        env:
+          # Läsbehörighet räcker: alla repon i organisationen är publika. Tokenen sparas aldrig.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
