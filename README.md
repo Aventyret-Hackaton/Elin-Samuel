@@ -11,7 +11,7 @@ npm run build    # typecheck + produktionsbygge i dist/
 ```
 Flöde: klick/ENTER på boot-skärmen (modemljud, klicka igen för att hoppa över) → rummet, ingen text i bild →
 klick på datorskärmen zoomar in → skriv valfri text i prompten och tryck ENTER → filmen (med nyckeltal från GitHub-organisationen stort ovanpå) → personerna →
-`continue? [y] [n]` över hela skärmen (pilar/y/n väljer, ENTER bekräftar): y → matrix-regn på datorskärmen, vinnarens reponamn avkodas och står stort i grönt, sedan åker kameran ut till rummet. n → tillbaka till rummet.
+`reveal winner? [y] [n]` över hela skärmen (pilar/y/n väljer, ENTER bekräftar): y → matrix-regn på datorskärmen, vinnarens reponamn avkodas och står stort i grönt, sedan åker kameran ut till rummet. n → tillbaka till rummet.
 
 Testgenvägar (utan ljud): `?skip=idle`, `?skip=prompt`, `?skip=hud`, `?skip=reveal` (matrix-regnet på skärmen), `?skip=winner` (slutbilden).
 Kontroll att text aldrig hamnar över skärmen: kör `__check()` i konsolen i scen 1.
@@ -49,7 +49,7 @@ Byt bild: se `docs/room/PROMPTS.md`. Utvecklarlägen (bara `npm run dev`, sparar
 `npm run github` (körs även före `npm run build`) hämtar commits, PR:er, rader, språk och tidslinje per timme för alla repon i
 `Aventyret-Hackaton` via GitHub-API:t och skriver `public/data/github.json`. Token tas från `GITHUB_TOKEN` eller inloggad `gh`
 och sparas aldrig. Utan token gäller 60 anrop/timme. Misslyckas hämtningen behålls befintlig fil.
-Exkludera repon: `GITHUB_EXCLUDE=Elin-Samuel,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, vibekådare (bidragsgivare), rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
+Exkludera repon: `GITHUB_EXCLUDE=vinnarmaskinen,repo-config-test npm run github`. Arton rubriker visas stort ovanpå filmen, jämnt fördelade över dess längd: repon, commits, pull requests, vibekådare (bidragsgivare), rader kod, rekordtimmen, de två vanligaste kodspråken ("coded in javascript, 6 repositories") och de två vanligaste teknikstackarna ("built with vite, 3 repositories"). Teknikstackar hittas i package.json, requirements.txt, Dockerfile m.m. Dessutom filer, unika npm-paket och commits co-authored av AI. En rubrik, "coded in confetti, 1 repository", är ett internt skämt utan data bakom (konstanten `JOKE` i `src/main.ts`).
 Kör `npm run github` precis före lansering så siffrorna är färska.
 
 ## Typsnitt
