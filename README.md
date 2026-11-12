@@ -57,7 +57,15 @@ GitHub Pages via Actions (`.github/workflows/pages.yml`). Varje push till `main`
 https://aventyret-hackaton.github.io/vinnarmaskinen/. Kör bygget manuellt (Actions → Pages → Run workflow) precis före lansering,
 så hämtas färsk statistik. Bygget hämtar fonten och statistiken (`prebuild`) med repots egen token. Den har bara läsbehörighet, och alla repon i organisationen är publika.
 Sökvägarna följer `base_path` från Pages: undermappen `/vinnarmaskinen/` på github.io, och roten med egen domän.
-Egen domän (t.ex. `hackathon.aventyret.se`): lägg en CNAME-post mot `aventyret-hackaton.github.io` och ange domänen under Settings → Pages. Ingen kodändring behövs.
+Egen domän (t.ex. `hackathon.aventyret.se`): lägg en CNAME-post mot `aventyret-hackaton.github.io` och ange domänen under Settings → Pages. Ändra också `og:image` och `og:url` i `index.html` (se Mobil och delning).
+
+## Mobil och delning
+- **Mobilvy** (`src/mobile.ts`, `src/mobile.css`): telefoner och surfplattor (touch utan hovring, eller smalare än 760 px) får slutbilden
+  med vinnarnamnet på skärmen, vinnaren i text, en uppmaning att öppna på dator och en länk till vinnarens repo. `src/entry.ts` väljer läge
+  och laddar 3D-upplevelsen bara på dator. Testa med `?device=mobile` eller `?device=desktop`.
+- **Delningsbild** (`public/share/og.jpg`, 1200×630): rummet i första scenen med boot-raderna på skärmen. Avslöjar inte vinnaren.
+  Taggarna står i `index.html`. `og:image` och `og:url` är fullständiga adresser till github.io och måste ändras vid egen domän.
+- Bilderna (`public/share/`) är skärmdumpar ur sajten (`?skip=idle` i 1200×630, `?skip=winner` i 1600×900 beskuren till stående) och kan bytas utan kodändring.
 
 ## Typsnitt
 Replica LL Regular (enda vikten, aldrig versaler: all text visas i gemener), självhostad woff2 med samma mönster som aventyret.se (`font-display: swap`, preload).

@@ -100,6 +100,16 @@ så det sitter precis ovanför bildkanten, som på film:
   Surret börjar med ett kort uppsving när röret tänder. Ljuden ligger i samma GSAP-tidslinje som blinkandet.
 - Verifierat: ljuset i stillbilder vid 0, 35 och 100 %, ljuden spelar utan fel. **Inte sett eller hört i realtid**.
 
+## Uppdatering 2026-11-12: vinnaren, publicering, mobil och delning
+- Vinnaren är `konfetti` (`public/data/winner.json`).
+- Publicering via GitHub Pages (`.github/workflows/pages.yml`, se README). Ingen egen domän: https://aventyret-hackaton.github.io/vinnarmaskinen/.
+- **Mobilvy:** sajten kräver mus och tangentbord, så telefoner får en stillsam sida med slutbilden (datorn med vinnarnamnet), vinnaren,
+  rubriken och en länk till repot. `src/entry.ts` väljer läge och laddar Three.js bara på dator (mobilen laddar ~4 kB JS).
+- **Delningsbild:** rummet i första scenen med boot-raderna. Elin valde den framför slutbilden, så att länkförhandsvisningen inte avslöjar vinnaren.
+- Fontlicensen: Elin bedömer att publik hosting är okej, eftersom Äventyret redan använder Replica på aventyret.se.
+- Verifierat: mobilvyn i 375×812 och 360×640, inga 3D-filer laddas på mobil, desktop startar som förut, bygge med undermapp.
+  Inte verifierat: riktig telefon, och hur Slack/LinkedIn faktiskt visar delningsbilden (kräver att sajten är publicerad).
+
 ## Öppna frågor
 - Ljudet i scen 3 (tangentklick + pip) är inte avlyssnat av en människa.
 - **Djupkartan** är grov och handgjord. En riktig (Depth Anything eller liknande) ger bättre parallax.
