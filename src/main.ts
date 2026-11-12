@@ -381,7 +381,7 @@ function hideFigure() {
 }
 
 // ---------- Efter filmen: personerna (statistiken har redan visats i filmen) ----------
-const GALLERY_SECONDS = 8; // så länge galleriet visas innan frågan "continue?" tar över hela skärmen
+const GALLERY_SECONDS = 8; // så länge galleriet visas innan frågan "reveal winner?" tar över hela skärmen
 
 function buildHud() {
   const hud = $('hud');
@@ -426,18 +426,18 @@ function buildHud() {
   gsap.to(ring, { rotationY: '+=360', duration: 10, ease: 'none', repeat: -1 }); // 2,5x snabbare än förut (25 s/varv)
   // Rubriken över personerna. Antalet är antalet repon i organisationen (visas i gemener, enligt sajtens regel).
   const repoCount = github?.totals.repos ?? 0;
-  const title = `${repoCount ? repoCount + ' ' : ''}meningslösa projekt. ett (1) mer onödigt än de andra. faktiskt. inte ditt - men datt.`;
+  const title = `${repoCount ? repoCount + ' ' : ''}meningslösa projekt. ett (1) mer onödigt än de andra. faktiskt.`;
   tl.add(typeInto(finalTitle, `> ${title}`, 30), 0.6);
   tl.call(showContinue, [], GALLERY_SECONDS);
 }
 
-// ---------- "continue? [y] [n]" över hela skärmen, som boot-skärmen i scen 1 ----------
+// ---------- "reveal winner? [y] [n]" över hela skärmen, som boot-skärmen i scen 1 ----------
 // Pilarna (eller y/n) väljer, enter bekräftar. y -> scen 3, n -> tillbaka till scen 1 (rummet).
 let choice: 'y' | 'n' = 'n';
 
 function renderChoice() {
   $('continueMain').innerHTML =
-    `<span>&gt; continue?</span>` +
+    `<span>&gt; reveal winner?</span>` +
     `<span class="opt${choice === 'y' ? ' sel' : ''}" data-c="y">[ y ]</span>` +
     `<span class="opt${choice === 'n' ? ' sel' : ''}" data-c="n">[ n ]</span><i class="cursor"></i>`;
 }

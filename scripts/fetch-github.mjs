@@ -2,7 +2,7 @@
 // Token (valfri, höjer rate limit): GITHUB_TOKEN eller inloggad `gh` (hämtas med `gh auth token`).
 // Tokenen skrivs aldrig till disk eller output. Misslyckas hämtningen lämnas befintlig github.json orörd.
 //   node scripts/fetch-github.mjs            (alla repon)
-//   GITHUB_EXCLUDE=Elin-Samuel,hackaton node scripts/fetch-github.mjs
+//   GITHUB_EXCLUDE=vinnarmaskinen,hackaton node scripts/fetch-github.mjs
 //
 // Utdata: totals (repon, commits, PR, bidragsgivare, rader), peakHour, topRepo, repos[], timeline[],
 // languages[] (med antal repon per språk) och stacks[] (teknikstackar som hittas i filer som package.json,
