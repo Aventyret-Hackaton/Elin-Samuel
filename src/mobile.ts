@@ -1,7 +1,6 @@
 // Mobilvyn: slutbilden (rummet med vinnarnamnet på skärmen), vinnaren och en uppmaning att öppna på dator.
 // Bilden ligger i public/share/mobil.jpg och kan bytas utan kodändring.
 import './style.css';
-import './mobile.css';
 import { CONFIG, BASE } from './config';
 
 const ORG = 'Aventyret-Hackaton';
