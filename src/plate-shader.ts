@@ -62,6 +62,7 @@ uniform float uFlick;
 uniform float uWinner;
 uniform float uBlinds;
 uniform float uSignPower;
+uniform float uTube;      // lysröret i taket (precis ovanför bildkanten), 0–1 med flimmer
 uniform float uScreenGain;
 uniform vec3 uScreenCol;
 uniform vec2 uCar;
@@ -152,6 +153,15 @@ vec3 shade(Plate P, sampler2D T, sampler2D D, vec2 ndc, vec2 pan) {
     col += base * uScreenCol * spill * uPower * (uFlick - 1.0 + 0.12 + 1.1 * (1.0 - uLit));
   }
   col += carLight(q, z, base);
+  // Lysröret: kallt vitt ljus uppifrån som fyller rummet, starkast högt upp, och ett sken som läcker in vid överkanten
+  if (uTube > 0.0) {
+    float fromTop = pow(clamp(1.0 - q.y, 0.0, 1.0), 1.4);
+    vec3 cool = vec3(0.82, 0.93, 1.0);
+    col += base * cool * uTube * (1.1 + 1.6 * fromTop);
+    col += cool * uTube * 0.018 * (0.5 + fromTop); // platt ljus: skuggorna lyfts lite
+    float bleed = exp(-max(q.y, 0.0) * 18.0) * exp(-pow((q.x - 0.45) / 0.45, 2.0));
+    col += vec3(0.75, 0.88, 1.0) * uTube * bleed * 0.5;
+  }
   if (P.hasWindow > 0.5) {
     vec2 dw = (q - P.windowC) * vec2(P.aspect, 1.0);
     col += base * vec3(1.0, 0.24, 0.5) * exp(-dot(dw, dw) * 6.0) * uSignPower * 1.2;

@@ -89,6 +89,9 @@ export class Room {
   blinds = 0;
   /** Neonskyltens ljusstyrka (0-1). */
   signPower = 0;
+  /** Lysröret i taket (scen 3), 0–1. */
+  tube = 0;
+  private tubeLight = new THREE.PointLight(0xd6ecff, 0, 9, 1.5);
   private dust: THREE.Points;
   private ledGreen: THREE.Mesh;
   private ledPink: THREE.Mesh;
@@ -321,6 +324,8 @@ export class Room {
 
   private buildLights() {
     this.scene.add(this.ambient);
+    this.tubeLight.position.set(0.4, 2.7, -0.6); // i taket ovanför skrivbordet
+    this.scene.add(this.tubeLight);
 
     this.screenLight.position.set(0.9, 1.2, -1.3);
     this.scene.add(this.screenLight);
@@ -465,7 +470,8 @@ export class Room {
     this.screenMat.color.setScalar(Math.max(0, sm));
 
     this.ambient.color.set(0x1a3a44).lerp(new THREE.Color(0x4a2a18), w);
-    this.ambient.intensity = 0.02 + 0.55 * lit;
+    this.ambient.intensity = 0.02 + 0.55 * lit + 0.6 * this.tube;
+    this.tubeLight.intensity = 6 * this.tube;
     this.blindsSpot.color.set(0xff3d7f).lerp(new THREE.Color(0xffb15c), w * 0.6);
     this.blindsSpot.intensity = 10 * lit * (1 + Math.sin(t * 0.6) * 0.08);
     this.fillTeal.intensity = 0.7 * lit;

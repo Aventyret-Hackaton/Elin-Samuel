@@ -103,6 +103,8 @@ export class PlateRoom implements RoomLike {
   winner = 0;
   blinds = 0;
   signPower = 0;
+  /** Lysröret i taket (scen 3): 0 = släckt, 1 = tänt. Flimret animeras i main.ts. */
+  tube = 0;
   mouseGain = 1;
   paused = false;
   promptText = '';
@@ -206,6 +208,7 @@ export class PlateRoom implements RoomLike {
       uWinner: { value: 0 },
       uBlinds: { value: 0 },
       uSignPower: { value: 0 },
+      uTube: { value: 0 },
       uScreenGain: { value: 0 },
       uScreenCol: { value: new THREE.Color(0x6bff97) },
       uCar: { value: new THREE.Vector2(-1, 0) },
@@ -492,6 +495,7 @@ export class PlateRoom implements RoomLike {
     u.uWinner.value = w;
     u.uBlinds.value = this.blinds;
     u.uSignPower.value = this.signPower;
+    u.uTube.value = this.tube;
     u.uScreenGain.value = Math.max(0, pw * (1 + (flick - 1) * 2) * 1.5);
     (u.uScreenCol.value as THREE.Color).set(0x6bff97).lerp(new THREE.Color(0xff3d7f), w);
     u.uBarrel.value = 0.06 * (1 - this.zoom);

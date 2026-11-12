@@ -373,3 +373,98 @@ export function victoryFanfare() {
   ['C5', 'E5', 'G5'].forEach((h) => chipNote(c, out, HZ[h], end, 1.05, 0.5, 'pulse25'));
   chipNote(c, out, HZ.C3, end, 1.05, 0.9, 'triangle');
 }
+
+// ---------- Lysrör som tänds ----------
+
+/** Tändarens klick: ett kort metalliskt tick, en liten ping och ett dovt dunk från drosseln. */
+export function tubeClick(strength = 1) {
+  const c = ensureAudio();
+  const t = c.currentTime + 0.005;
+  const out = c.createGain();
+  out.gain.value = 0.22 * strength;
+  out.connect(c.destination);
+  // tick
+  const n = c.createBufferSource();
+  n.buffer = noiseBuffer(c, 0.02);
+  const hp = c.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 2500;
+  const ng = c.createGain();
+  ng.gain.setValueAtTime(1, t);
+  ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.012);
+  n.connect(hp).connect(ng).connect(out);
+  n.start(t);
+  n.stop(t + 0.02);
+  // ping (metall i armaturen) och dunk (drosseln)
+  for (const [f, v, d] of [[3300 + Math.random() * 400, 0.25, 0.05], [110, 0.9, 0.04]] as const) {
+    const o = c.createOscillator();
+    o.frequency.value = f;
+    const og = c.createGain();
+    og.gain.setValueAtTime(v, t);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(og).connect(out);
+    o.start(t);
+    o.stop(t + d + 0.01);
+  }
+}
+
+/**
+ * Lysrörssurr: brum på 100 Hz (dubbla nätfrekvensen, 50 Hz i Sverige) med övertoner och ett svagt knaster.
+ * Startar med ett kort uppsving när röret tänder och lägger sig sedan lågt. Returnerar stopp-funktion.
+ */
+export function tubeBuzz(): () => void {
+  const c = ensureAudio();
+  const t = c.currentTime;
+  const out = c.createGain();
+  out.gain.setValueAtTime(0.0001, t);
+  out.gain.exponentialRampToValueAtTime(0.06, t + 0.04); // tändningen
+  out.gain.exponentialRampToValueAtTime(0.022, t + 0.6); // sedan lågt och jämnt
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 1400;
+  out.connect(lp).connect(c.destination);
+  const nodes: AudioScheduledSourceNode[] = [];
+  for (const [f, v, type] of [[100, 0.6, 'sawtooth'], [200, 0.25, 'square'], [300, 0.12, 'sine']] as const) {
+    const o = c.createOscillator();
+    o.type = type;
+    o.frequency.value = f;
+    const og = c.createGain();
+    og.gain.value = v;
+    o.connect(og).connect(out);
+    o.start(t);
+    nodes.push(o);
+  }
+  // Lätt fladder i brummet
+  const lfo = c.createOscillator();
+  const depth = c.createGain();
+  lfo.frequency.value = 0.8;
+  depth.gain.value = 0.004;
+  lfo.connect(depth).connect(out.gain);
+  lfo.start(t);
+  nodes.push(lfo);
+  // Knaster: svaga, glesa elektriska sprak
+  let alive = true;
+  const crackle = () => {
+    if (!alive) return;
+    const now = c.currentTime;
+    const s = c.createBufferSource();
+    s.buffer = noiseBuffer(c, 0.015);
+    const bp = c.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 4000 + Math.random() * 3000;
+    const sg = c.createGain();
+    sg.gain.setValueAtTime(0.004 + Math.random() * 0.006, now);
+    sg.gain.exponentialRampToValueAtTime(0.0001, now + 0.01);
+    s.connect(bp).connect(sg).connect(c.destination);
+    s.start(now);
+    s.stop(now + 0.015);
+    setTimeout(crackle, 300 + Math.random() * 1500);
+  };
+  setTimeout(crackle, 400);
+  return () => {
+    alive = false;
+    out.gain.cancelScheduledValues(c.currentTime);
+    out.gain.setTargetAtTime(0.0001, c.currentTime, 0.1);
+    setTimeout(() => nodes.forEach((x) => x.stop()), 600);
+  };
+}
